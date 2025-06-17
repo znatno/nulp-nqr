@@ -25,6 +25,31 @@ const app = (0, express_1.default)();
 // Middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// Validate request body for creating/updating a person
+function validatePerson(req, res, next) {
+    const { fullName, qualificationCenterId, professionalQualificationId, certificateNumber, dateReceived } = req.body;
+    if (typeof fullName !== 'string' || !fullName.trim()) {
+        res.status(400).json({ error: 'fullName is required' });
+        return;
+    }
+    if (typeof qualificationCenterId !== 'number') {
+        res.status(400).json({ error: 'qualificationCenterId must be a number' });
+        return;
+    }
+    if (typeof professionalQualificationId !== 'number') {
+        res.status(400).json({ error: 'professionalQualificationId must be a number' });
+        return;
+    }
+    if (typeof certificateNumber !== 'string' || !certificateNumber.trim()) {
+        res.status(400).json({ error: 'certificateNumber is required' });
+        return;
+    }
+    if (!dateReceived || isNaN(Date.parse(dateReceived))) {
+        res.status(400).json({ error: 'dateReceived must be a valid date' });
+        return;
+    }
+    next();
+}
 // ─────────────────────────────────────────────────────
 // REST endpoints
 app.get('/api/qualifications', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -38,6 +63,51 @@ app.post('/api/qualifications', (req, res) => __awaiter(void 0, void 0, void 0, 
 }));
 app.delete('/api/qualifications/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield prisma.qualification.delete({ where: { id: Number(req.params.id) } });
+    res.sendStatus(204);
+}));
+// ──────────────── Person CRUD ────────────────────────
+app.get('/api/persons', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield prisma.person.findMany({
+        include: { qualificationCenter: true, professionalQualification: true }
+    });
+    res.json(data);
+}));
+app.get('/api/persons/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const person = yield prisma.person.findUnique({
+        where: { id: Number(req.params.id) },
+        include: { qualificationCenter: true, professionalQualification: true }
+    });
+    if (!person) {
+        res.sendStatus(404);
+        return;
+    }
+    res.json(person);
+}));
+app.post('/api/persons', validatePerson, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const person = yield prisma.person.create({ data: {
+            fullName: req.body.fullName,
+            qualificationCenterId: req.body.qualificationCenterId,
+            professionalQualificationId: req.body.professionalQualificationId,
+            certificateNumber: req.body.certificateNumber,
+            dateReceived: new Date(req.body.dateReceived)
+        } });
+    res.status(201).json(person);
+}));
+app.put('/api/persons/:id', validatePerson, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const person = yield prisma.person.update({
+        where: { id: Number(req.params.id) },
+        data: {
+            fullName: req.body.fullName,
+            qualificationCenterId: req.body.qualificationCenterId,
+            professionalQualificationId: req.body.professionalQualificationId,
+            certificateNumber: req.body.certificateNumber,
+            dateReceived: new Date(req.body.dateReceived)
+        }
+    });
+    res.json(person);
+}));
+app.delete('/api/persons/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield prisma.person.delete({ where: { id: Number(req.params.id) } });
     res.sendStatus(204);
 }));
 // ─────────────────────────────────────────────────────
