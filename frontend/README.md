@@ -16,4 +16,18 @@ frontend/
 │  └─ main.ts
 └─ tailwind.config.js
 ```
-rest should be ignored
+## Configuring the API base URL
+
+The frontend talks to the Express backend through Axios. By default the
+requests go to `/api`, which works when the UI and API are served from the same
+origin. If your backend runs on a different host, create a `.env` file (or copy
+`.env.example`) and set `VITE_API_BASE_URL` to the full URL of the backend
+including the `/api` prefix, for example:
+
+```
+VITE_API_BASE_URL=https://backend.example.com/api
+```
+
+During local development Vite's proxy configuration still handles `localhost`
+traffic, so you typically do not need to change anything.
+
