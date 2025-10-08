@@ -1,141 +1,141 @@
-import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
 
 async function main() {
-    // Developers
-    const dev1 = await prisma.developer.create({
-        data: { name: 'Tech Education LLC', edrpou: '12345678' },
-    });
-    const dev2 = await prisma.developer.create({
-        data: { name: 'National Training Center', edrpou: '87654321' },
-    });
+    // === РОЗРОБНИКИ ============================================================
+    const admin = await prisma.developer.upsert({
+        where: { id: 1 },
+        update: {},
+        create: { id: 1, name: 'Адміністратор системи', edrpou: '00000000' },
+    })
 
-    // Professions
+    const dev2 = await prisma.developer.create({
+        data: { name: 'ТОВ «Лорем Системи»', edrpou: '12345678' },
+    })
+    const dev3 = await prisma.developer.create({
+        data: { name: 'ПП «Іпсум Інновації»', edrpou: '87654321' },
+    })
+
+    // === ПРОФЕСІЇ ==============================================================
     const prof1 = await prisma.profession.create({
         data: {
-            name: 'Software Development',
-            code: 'SD-001',
-            approvalDate: new Date('2022-01-10'),
-            developerId: dev1.id,
+            name: 'Програміст-архітектор',
+            code: '2141',
+            developerId: admin.id,
         },
-    });
+    })
     const prof2 = await prisma.profession.create({
         data: {
-            name: 'Network Engineering',
-            code: 'NE-001',
-            approvalDate: new Date('2022-06-15'),
+            name: 'Графічний дизайнер',
+            code: '3471',
             developerId: dev2.id,
         },
-    });
+    })
 
-    // Professional Qualifications
+    // === ПРОФЕСІЙНІ КВАЛІФІКАЦІЇ ==============================================
     const pq1 = await prisma.professionalQualification.create({
         data: {
-            name: 'Junior Software Developer',
-            nkrLevel: 4,
+            name: 'Старший архітектор програмного забезпечення',
+            nkrLevel: 7,
             professionId: prof1.id,
         },
-    });
+    })
     const pq2 = await prisma.professionalQualification.create({
         data: {
-            name: 'Senior Network Engineer',
-            nkrLevel: 5,
+            name: 'Дизайнер інтерфейсів (UX/UI)',
+            nkrLevel: 6,
             professionId: prof2.id,
         },
-    });
+    })
 
-    // Qualification Centers
-    const center1 = await prisma.qualificationCenter.create({
+    // === КВАЛІФІКАЦІЙНІ ЦЕНТРИ ================================================
+    const qc1 = await prisma.qualificationCenter.create({
         data: {
-            name: 'City Certification Center',
+            name: 'Київський національний центр кваліфікацій',
             edrpou: '11223344',
-            address: '123 Main St, Kyiv',
+            address: 'м. Київ, вул. Лесі Українки, 1',
         },
-    });
-    const center2 = await prisma.qualificationCenter.create({
+    })
+    const qc2 = await prisma.qualificationCenter.create({
         data: {
-            name: 'Regional Assessment Hub',
+            name: 'Львівський центр професійного розвитку',
             edrpou: '55667788',
-            address: '45 Industrial Ave, Lviv',
+            address: 'м. Львів, вул. Городоцька, 12',
         },
-    });
+    })
 
-    // Accreditations
-    await prisma.accreditation.create({
+    // === АКРЕДИТАЦІЇ ===========================================================
+    const acc1 = await prisma.accreditation.create({
         data: {
             professionalQualificationId: pq1.id,
-            qualificationCenterId: center1.id,
-            certificateNumber: 'ACC-1001',
-            hakDate: new Date('2023-03-12'),
+            qualificationCenterId: qc1.id,
+            certificateNumber: 'АКР-001',
         },
-    });
-    await prisma.accreditation.create({
+    })
+    const acc2 = await prisma.accreditation.create({
         data: {
             professionalQualificationId: pq2.id,
-            qualificationCenterId: center2.id,
-            certificateNumber: 'ACC-1002',
-            hakDate: new Date('2023-05-20'),
+            qualificationCenterId: qc2.id,
+            certificateNumber: 'АКР-002',
         },
-    });
+    })
 
-    // Persons
-    await prisma.person.create({
-        data: {
-            fullName: 'Oleksandr Shevchenko',
-            qualificationCenterId: center1.id,
-            professionalQualificationId: pq1.id,
-            certificateNumber: 'CERT-2001',
-            dateReceived: new Date('2023-04-15'),
-        },
-    });
-    await prisma.person.create({
-        data: {
-            fullName: 'Iryna Kozachenko',
-            qualificationCenterId: center2.id,
-            professionalQualificationId: pq2.id,
-            certificateNumber: 'CERT-2002',
-            dateReceived: new Date('2023-06-18'),
-        },
-    });
-
-    // Experts
+    // === ЕКСПЕРТИ ==============================================================
     const expert1 = await prisma.expert.create({
         data: {
-            fullName: 'Maria Popova',
+            fullName: 'д-р Іван Долор Сіт',
             professionalQualificationId: pq1.id,
         },
-    });
+    })
     const expert2 = await prisma.expert.create({
         data: {
-            fullName: 'Taras Horbunov',
+            fullName: 'канд. наук Анна Амет Консектетур',
             professionalQualificationId: pq2.id,
         },
-    });
+    })
 
-    // Examinations
-    await prisma.examination.create({
+    // === ОСОБИ (ВИПУСКНИКИ) ====================================================
+    const person1 = await prisma.person.create({
         data: {
+            fullName: 'Іван Лоременко',
+            qualificationCenterId: qc1.id,
             professionalQualificationId: pq1.id,
-            qualificationCenterId: center1.id,
-            expertId: expert1.id,
-            examinationDate: new Date('2024-01-10'),
+            certificateNumber: 'СВІД-001',
         },
-    });
-    await prisma.examination.create({
+    })
+    const person2 = await prisma.person.create({
         data: {
+            fullName: 'Анна Іпсуменко',
+            qualificationCenterId: qc2.id,
             professionalQualificationId: pq2.id,
-            qualificationCenterId: center2.id,
-            expertId: expert2.id,
-            examinationDate: new Date('2024-02-20'),
+            certificateNumber: 'СВІД-002',
         },
-    });
+    })
+
+    // === ЕКСПЕРТИЗИ ============================================================
+    await prisma.examination.createMany({
+        data: [
+            {
+                professionalQualificationId: pq1.id,
+                qualificationCenterId: qc1.id,
+                expertId: expert1.id,
+            },
+            {
+                professionalQualificationId: pq2.id,
+                qualificationCenterId: qc2.id,
+                expertId: expert2.id,
+            },
+        ],
+    })
+
+    console.log('✅ Базу даних заповнено демонстраційними українськими даними.')
 }
 
 main()
     .catch((e) => {
-        console.error(e);
-        process.exit(1);
+        console.error('❌ Помилка при наповненні БД:', e)
+        process.exit(1)
     })
-    .finally(() => prisma.$disconnect());
+    .finally(async () => {
+        await prisma.$disconnect()
+    })
