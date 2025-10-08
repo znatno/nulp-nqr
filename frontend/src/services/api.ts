@@ -1,4 +1,19 @@
 import axios from 'axios';
 
-// proxy handles /api → 4000 in dev, same-origin in prod
-export const api = axios.create({ baseURL: '/api' });
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+function normalizeBaseUrl(url: string | undefined): string {
+  if (!url) {
+    return '/api';
+  }
+
+  const trimmed = url.replace(/\/+$/, '');
+
+  if (/\/api$/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `${trimmed}/api`;
+}
+
+export const api = axios.create({ baseURL: normalizeBaseUrl(rawBaseUrl) });
