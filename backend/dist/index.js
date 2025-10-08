@@ -107,7 +107,13 @@ app.delete('/api/qualifications/:id', (req, res) => __awaiter(void 0, void 0, vo
         return;
     }
     try {
-        yield getProfessionalQualificationClient().delete({ where: { id } });
+        yield prisma.$transaction([
+            prisma.examination.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.accreditation.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.person.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.expert.deleteMany({ where: { professionalQualificationId: id } }),
+            getProfessionalQualificationClient().delete({ where: { id } }),
+        ]);
         res.sendStatus(204);
     }
     catch (err) {
