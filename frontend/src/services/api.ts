@@ -1,4 +1,7 @@
 import axios from 'axios';
 
-// proxy handles /api → 4000 in dev, same-origin in prod
-export const api = axios.create({ baseURL: '/api' });
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const baseURL = rawBaseUrl ? rawBaseUrl.replace(/\/$/, '') : '/api';
+
+export const api = axios.create({ baseURL });
