@@ -2,7 +2,11 @@
 import { ref, onMounted, computed } from 'vue';
 import { api } from '@/services/api';
 
-interface Profession { id: number; name: string }
+interface Profession {
+  id: number;
+  name: string;
+  code?: string;
+}
 interface Qualification {
   id: number;
   title: string;
@@ -80,6 +84,14 @@ function formatDate(date: string): string {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString();
+}
+
+function formatProfession(profession?: Profession | null): string {
+  if (!profession) return '—';
+  if (profession.code) {
+    return `${profession.name} (${profession.code})`;
+  }
+  return profession.name;
 }
 
 async function load() {
@@ -239,7 +251,7 @@ onMounted(load);
                 >
                   <td class="py-2 pr-4 font-medium">{{ qualification.name }}</td>
                   <td class="py-2 pr-4">{{ qualification.nkrLevel }}</td>
-                  <td class="py-2">{{ qualification.profession?.name ?? '—' }}</td>
+                  <td class="py-2">{{ formatProfession(qualification.profession) }}</td>
                 </tr>
                 <tr v-if="professionalPreview.length === 0">
                   <td colspan="3" class="py-4 text-center text-gray-400">Професійних кваліфікацій не знайдено.</td>
@@ -271,7 +283,7 @@ onMounted(load);
                 >
                   <td class="py-2 pr-4 font-medium">{{ qualification.title }}</td>
                   <td class="py-2 pr-4">{{ qualification.level }}</td>
-                  <td class="py-2">{{ qualification.profession?.name ?? '—' }}</td>
+                  <td class="py-2">{{ formatProfession(qualification.profession) }}</td>
                 </tr>
                 <tr v-if="qualificationPreview.length === 0">
                   <td colspan="3" class="py-4 text-center text-gray-400">Кваліфікацій не знайдено.</td>
@@ -318,7 +330,7 @@ onMounted(load);
               >
                 <td class="py-2 pr-4 font-medium">{{ qualification.title }}</td>
                 <td class="py-2 pr-4">{{ qualification.level }}</td>
-                <td class="py-2 pr-4">{{ qualification.profession?.name ?? '—' }}</td>
+                <td class="py-2 pr-4">{{ formatProfession(qualification.profession) }}</td>
                 <td class="py-2 text-right">
                   <button
                     @click="remove(qualification.id)"

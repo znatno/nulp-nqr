@@ -2,12 +2,24 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import type {
+    Profession,
+    ProfessionalQualification,
+} from '@prisma/client';
 import path from 'path';
 import fs from 'fs';
 
-// Cast to any because the generated Prisma client in this example may not
-// include the extended models used below.
-const prisma = new PrismaClient() as any;
+const prisma = new PrismaClient();
+
+function getProfessionalQualificationClient(): PrismaClient['professionalQualification'] {
+    const client = prisma.professionalQualification;
+    if (!client?.findMany) {
+        throw new Error(
+            'Prisma client is missing the `professionalQualification` model. Run `npx prisma generate` to regenerate the client.'
+        );
+    }
+    return client;
+}
 const app = express();
 
 // ─────────────────────────────────────────────────────
@@ -51,32 +63,100 @@ function validatePerson(req: Request, res: Response, next: NextFunction): void {
 
 // ─────────────────────────────────────────────────────
 // REST endpoints
-app.get('/api/qualifications', async (_req: Request, res: Response) => {
-    const data = await prisma.qualification.findMany({ include: { profession: true } });
-    res.json(data);
+
+type QualificationResponse = {
+    id: number;
+    title: string;
+    level: number;
+    profession: Profession | null;
+};
+
+type ProfessionalQualificationWithProfession = ProfessionalQualification & {
+    profession: Profession | null;
+};
+
+function mapProfessionalQualification({
+    id,
+    name,
+    nkrLevel,
+    profession,
+}: ProfessionalQualificationWithProfession): QualificationResponse {
+    return {
+        id,
+        title: name,
+        level: nkrLevel,
+        profession,
+    };
+}
+
+app.get('/api/qualifications', async (_req: Request, res: Response): Promise<void> => {
+    try {
+        const data = await getProfessionalQualificationClient().findMany({ include: { profession: true } });
+        res.json(data.map(mapProfessionalQualification));
+    } catch (err) {
+        console.error('Failed to get qualifications', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.post('/api/qualifications', async (req: Request, res: Response) => {
-    const { title, level, professionId } = req.body;
-    const q = await prisma.qualification.create({ data: { title, level, professionId } });
-    res.status(201).json(q);
+app.post('/api/qualifications', async (req: Request, res: Response): Promise<void> => {
+    const { title, level, professionId } = req.body as {
+        title?: unknown;
+        level?: unknown;
+        professionId?: unknown;
+    };
+
+    if (typeof title !== 'string' || !title.trim()) {
+        res.status(400).json({ error: 'title is required' });
+        return;
+    }
+    if (typeof level !== 'number' || !Number.isInteger(level)) {
+        res.status(400).json({ error: 'level must be an integer' });
+        return;
+    }
+    if (typeof professionId !== 'number' || !Number.isInteger(professionId)) {
+        res.status(400).json({ error: 'professionId must be an integer' });
+        return;
+    }
+
+    try {
+        const qualification = await getProfessionalQualificationClient().create({
+            data: { name: title, nkrLevel: level, professionId },
+            include: { profession: true },
+        });
+        res.status(201).json(mapProfessionalQualification(qualification));
+    } catch (err) {
+        console.error('Failed to create qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-app.delete('/api/qualifications/:id', async (req: Request, res: Response) => {
-    await prisma.qualification.delete({ where: { id: Number(req.params.id) } });
-    res.sendStatus(204);
+app.delete('/api/qualifications/:id', async (req: Request, res: Response): Promise<void> => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+
+    try {
+        await getProfessionalQualificationClient().delete({ where: { id } });
+        res.sendStatus(204);
+    } catch (err) {
+        console.error('Failed to delete qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 // ──────────────── Person CRUD ────────────────────────
 app.get('/api/persons', async (_req: Request, res: Response): Promise<void> => {
-    const data = await (prisma as any).person.findMany({
+    const data = await prisma.person.findMany({
         include: { qualificationCenter: true, professionalQualification: true }
     });
     res.json(data);
 });
 
 app.get('/api/persons/:id', async (req: Request, res: Response): Promise<void> => {
-    const person = await (prisma as any).person.findUnique({
+    const person = await prisma.person.findUnique({
         where: { id: Number(req.params.id) },
         include: { qualificationCenter: true, professionalQualification: true }
     });
@@ -88,7 +168,7 @@ app.get('/api/persons/:id', async (req: Request, res: Response): Promise<void> =
 });
 
 app.post('/api/persons', validatePerson, async (req: Request, res: Response): Promise<void> => {
-    const person = await (prisma as any).person.create({ data: {
+    const person = await prisma.person.create({ data: {
         fullName: req.body.fullName,
         qualificationCenterId: req.body.qualificationCenterId,
         professionalQualificationId: req.body.professionalQualificationId,
@@ -99,7 +179,7 @@ app.post('/api/persons', validatePerson, async (req: Request, res: Response): Pr
 });
 
 app.put('/api/persons/:id', validatePerson, async (req: Request, res: Response): Promise<void> => {
-    const person = await (prisma as any).person.update({
+    const person = await prisma.person.update({
         where: { id: Number(req.params.id) },
         data: {
             fullName: req.body.fullName,
@@ -113,7 +193,7 @@ app.put('/api/persons/:id', validatePerson, async (req: Request, res: Response):
 });
 
 app.delete('/api/persons/:id', async (req: Request, res: Response): Promise<void> => {
-    await (prisma as any).person.delete({ where: { id: Number(req.params.id) } });
+    await prisma.person.delete({ where: { id: Number(req.params.id) } });
     res.sendStatus(204);
 });
 
@@ -123,7 +203,7 @@ app.delete('/api/persons/:id', async (req: Request, res: Response): Promise<void
 // Retrieve all professional qualifications
 app.get('/api/professional-qualifications', async (_req: Request, res: Response) => {
     try {
-        const data = await prisma.professionalQualification.findMany({ include: { profession: true } });
+        const data = await getProfessionalQualificationClient().findMany({ include: { profession: true } });
         res.json(data);
     } catch (err) {
         console.error('Failed to get professional qualifications', err);
@@ -153,7 +233,7 @@ app.post('/api/professional-qualifications', async (req: Request, res: Response)
     }
 
     try {
-        const qualification = await prisma.professionalQualification.create({
+        const qualification = await getProfessionalQualificationClient().create({
             data: { name, nkrLevel, professionId },
         });
         res.status(201).json(qualification);
@@ -191,7 +271,7 @@ app.put('/api/professional-qualifications/:id', async (req: Request, res: Respon
     }
 
     try {
-        const qualification = await prisma.professionalQualification.update({
+        const qualification = await getProfessionalQualificationClient().update({
             where: { id },
             data: {
                 ...(name !== undefined ? { name } : {}),
@@ -215,7 +295,7 @@ app.delete('/api/professional-qualifications/:id', async (req: Request, res: Res
     }
 
     try {
-        await prisma.professionalQualification.delete({ where: { id } });
+        await getProfessionalQualificationClient().delete({ where: { id } });
         res.sendStatus(204);
     } catch (err) {
         console.error('Failed to delete professional qualification', err);

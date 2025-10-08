@@ -12,14 +12,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const client_1 = require("@prisma/client");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-// Cast to any because the generated Prisma client in this example may not
-// include the extended models used below.
 const prisma = new client_1.PrismaClient();
+function getProfessionalQualificationClient() {
+    const client = prisma.professionalQualification;
+    if (!(client === null || client === void 0 ? void 0 : client.findMany)) {
+        throw new Error('Prisma client is missing the `professionalQualification` model. Run `npx prisma generate` to regenerate the client.');
+    }
+    return client;
+}
 const app = (0, express_1.default)();
 // ─────────────────────────────────────────────────────
 // Middleware
@@ -50,20 +56,64 @@ function validatePerson(req, res, next) {
     }
     next();
 }
-// ─────────────────────────────────────────────────────
-// REST endpoints
+function mapProfessionalQualification({ id, name, nkrLevel, profession, }) {
+    return {
+        id,
+        title: name,
+        level: nkrLevel,
+        profession,
+    };
+}
 app.get('/api/qualifications', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield prisma.qualification.findMany({ include: { profession: true } });
-    res.json(data);
+    try {
+        const data = yield getProfessionalQualificationClient().findMany({ include: { profession: true } });
+        res.json(data.map(mapProfessionalQualification));
+    }
+    catch (err) {
+        console.error('Failed to get qualifications', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }));
 app.post('/api/qualifications', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { title, level, professionId } = req.body;
-    const q = yield prisma.qualification.create({ data: { title, level, professionId } });
-    res.status(201).json(q);
+    if (typeof title !== 'string' || !title.trim()) {
+        res.status(400).json({ error: 'title is required' });
+        return;
+    }
+    if (typeof level !== 'number' || !Number.isInteger(level)) {
+        res.status(400).json({ error: 'level must be an integer' });
+        return;
+    }
+    if (typeof professionId !== 'number' || !Number.isInteger(professionId)) {
+        res.status(400).json({ error: 'professionId must be an integer' });
+        return;
+    }
+    try {
+        const qualification = yield getProfessionalQualificationClient().create({
+            data: { name: title, nkrLevel: level, professionId },
+            include: { profession: true },
+        });
+        res.status(201).json(mapProfessionalQualification(qualification));
+    }
+    catch (err) {
+        console.error('Failed to create qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }));
 app.delete('/api/qualifications/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield prisma.qualification.delete({ where: { id: Number(req.params.id) } });
-    res.sendStatus(204);
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+    try {
+        yield getProfessionalQualificationClient().delete({ where: { id } });
+        res.sendStatus(204);
+    }
+    catch (err) {
+        console.error('Failed to delete qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 }));
 // ──────────────── Person CRUD ────────────────────────
 app.get('/api/persons', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -115,7 +165,7 @@ app.delete('/api/persons/:id', (req, res) => __awaiter(void 0, void 0, void 0, f
 // Retrieve all professional qualifications
 app.get('/api/professional-qualifications', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const data = yield prisma.professionalQualification.findMany({ include: { profession: true } });
+        const data = yield getProfessionalQualificationClient().findMany({ include: { profession: true } });
         res.json(data);
     }
     catch (err) {
@@ -139,7 +189,7 @@ app.post('/api/professional-qualifications', (req, res) => __awaiter(void 0, voi
         return;
     }
     try {
-        const qualification = yield prisma.professionalQualification.create({
+        const qualification = yield getProfessionalQualificationClient().create({
             data: { name, nkrLevel, professionId },
         });
         res.status(201).json(qualification);
@@ -170,7 +220,7 @@ app.put('/api/professional-qualifications/:id', (req, res) => __awaiter(void 0, 
         return;
     }
     try {
-        const qualification = yield prisma.professionalQualification.update({
+        const qualification = yield getProfessionalQualificationClient().update({
             where: { id },
             data: Object.assign(Object.assign(Object.assign({}, (name !== undefined ? { name } : {})), (nkrLevel !== undefined ? { nkrLevel } : {})), (professionId !== undefined ? { professionId } : {})),
         });
@@ -189,7 +239,7 @@ app.delete('/api/professional-qualifications/:id', (req, res) => __awaiter(void 
         return;
     }
     try {
-        yield prisma.professionalQualification.delete({ where: { id } });
+        yield getProfessionalQualificationClient().delete({ where: { id } });
         res.sendStatus(204);
     }
     catch (err) {
