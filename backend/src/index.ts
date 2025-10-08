@@ -139,7 +139,13 @@ app.delete('/api/qualifications/:id', async (req: Request, res: Response): Promi
     }
 
     try {
-        await getProfessionalQualificationClient().delete({ where: { id } });
+        await prisma.$transaction([
+            prisma.examination.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.accreditation.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.person.deleteMany({ where: { professionalQualificationId: id } }),
+            prisma.expert.deleteMany({ where: { professionalQualificationId: id } }),
+            getProfessionalQualificationClient().delete({ where: { id } }),
+        ]);
         res.sendStatus(204);
     } catch (err) {
         console.error('Failed to delete qualification', err);
