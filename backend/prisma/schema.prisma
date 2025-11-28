@@ -18,19 +18,22 @@ model Developer {
 }
 
 // Професії
-// ID розробника, назва, код ЄДРПОУ
+// ID, назва, код ЄДРПОУ
 model Profession {
   id           Int        @id @default(autoincrement())
   name         String
   code         String
-  developerId  Int        @default(1)
+  developerId  Int
   approvalDate DateTime   @default(now())
-  developer    Developer  @relation(fields: [developerId], references: [id], onDelete: Restrict)
+  developer    Developer @relation(fields: [developerId], references: [id], onDelete: Restrict)
   professionalQualifications ProfessionalQualification[]
+
+
+
 }
 
 // Профкваліфікації
-// ID розробника, назва, код ЄДРПОУ
+// ID, назва, код ЄДРПОУ
 model ProfessionalQualification {
   id            Int           @id @default(autoincrement())
   name          String
@@ -62,9 +65,12 @@ model Accreditation {
   professionalQualificationId  Int
   qualificationCenterId        Int
   certificateNumber            String
-  sessiobNQADate               DateTime @default(now())
+  sessionNQADate               DateTime @default(now())
   professionalQualification    ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
   qualificationCenter          QualificationCenter @relation(fields: [qualificationCenterId], references: [id])
+
+  // одна комбінація - один запис
+  @@unique([professionalQualificationId, qualificationCenterId, certificateNumber])
 }
 
 // Особи (отримали профквал)
@@ -74,10 +80,14 @@ model Person {
   fullName                    String
   qualificationCenterId       Int
   professionalQualificationId Int
-  certificateNumber           String
+  // awards                      ProfessionalQualification[]
+  // certificateNumber           String
   dateReceived                DateTime @default(now())
   qualificationCenter         QualificationCenter @relation(fields: [qualificationCenterId], references: [id])
   professionalQualification   ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
+
+  // унікальний номер сертифікату
+  // @@unique([certificateNumber])
 }
 
 // Експерти
