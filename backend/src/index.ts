@@ -1,15 +1,24 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../prisma/generated/client.js';
 import type {
     Profession,
     ProfessionalQualification,
-} from '@prisma/client';
+} from '../prisma/generated/client.js';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const prisma = new PrismaClient();
+// ESM-compatible __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 function getProfessionalQualificationClient(): PrismaClient['professionalQualification'] {
     const client = prisma.professionalQualification;
@@ -33,7 +42,6 @@ function validatePerson(req: Request, res: Response, next: NextFunction): void {
         fullName,
         qualificationCenterId,
         professionalQualificationId,
-        certificateNumber,
         dateReceived
     } = req.body;
 
@@ -47,10 +55,6 @@ function validatePerson(req: Request, res: Response, next: NextFunction): void {
     }
     if (typeof professionalQualificationId !== 'number') {
         res.status(400).json({ error: 'professionalQualificationId must be a number' });
-        return;
-    }
-    if (typeof certificateNumber !== 'string' || !certificateNumber.trim()) {
-        res.status(400).json({ error: 'certificateNumber is required' });
         return;
     }
     if (!dateReceived || isNaN(Date.parse(dateReceived))) {
@@ -178,7 +182,6 @@ app.post('/api/persons', validatePerson, async (req: Request, res: Response): Pr
         fullName: req.body.fullName,
         qualificationCenterId: req.body.qualificationCenterId,
         professionalQualificationId: req.body.professionalQualificationId,
-        certificateNumber: req.body.certificateNumber,
         dateReceived: new Date(req.body.dateReceived)
     } });
     res.status(201).json(person);
@@ -191,7 +194,6 @@ app.put('/api/persons/:id', validatePerson, async (req: Request, res: Response):
             fullName: req.body.fullName,
             qualificationCenterId: req.body.qualificationCenterId,
             professionalQualificationId: req.body.professionalQualificationId,
-            certificateNumber: req.body.certificateNumber,
             dateReceived: new Date(req.body.dateReceived)
         }
     });
@@ -422,6 +424,7 @@ app.delete('/api/qualification-centers/:id', async (req: Request, res: Response)
 function resolveClientPath(): string {
     // __dirname is backend/src in dev, backend/dist in prod
     // go two levels up to repo root, then frontend/dist
+    // Using our ESM-compatible __dirname (defined at module level) instead of Prisma's global polyfill
     return path.resolve(__dirname, '../../frontend/dist');
 }
 
@@ -444,3 +447,8 @@ if (fs.existsSync(path.join(clientPath, 'index.html'))) {
 // ─────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`👉  http://localhost:${PORT}`));
+
+
+// DEBUG
+console.log('DATABASE_URL at runtime:', process.env.DATABASE_URL);
+

@@ -1,5 +1,11 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import 'dotenv/config'
+import { PrismaClient } from './generated/client.js'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
     // — Admin with fixed id=1
@@ -62,8 +68,8 @@ async function main() {
 
     await prisma.person.createMany({
         data: [
-            { fullName: 'Іван Лоременко', qualificationCenterId: qc1.id, professionalQualificationId: pq1.id, certificateNumber: 'СВІД-001' },
-            { fullName: 'Анна Іпсуменко', qualificationCenterId: qc2.id, professionalQualificationId: pq2.id, certificateNumber: 'СВІД-002' },
+            { fullName: 'Іван Лоременко', qualificationCenterId: qc1.id, professionalQualificationId: pq1.id },
+            { fullName: 'Анна Іпсуменко', qualificationCenterId: qc2.id, professionalQualificationId: pq2.id },
         ],
     })
 
@@ -78,7 +84,7 @@ async function main() {
 }
 
 main().catch((e) => {
-    console.error('❌ Помилка сідингу:', e)
+    console.error('❌ Помилка наповнення БД, перевірте справність prisma/seed.ts', e)
     process.exit(1)
 }).finally(async () => {
     await prisma.$disconnect()

@@ -33,7 +33,7 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // Validate request body for creating/updating a person
 function validatePerson(req, res, next) {
-    const { fullName, qualificationCenterId, professionalQualificationId, certificateNumber, dateReceived } = req.body;
+    const { fullName, qualificationCenterId, professionalQualificationId, dateReceived } = req.body;
     if (typeof fullName !== 'string' || !fullName.trim()) {
         res.status(400).json({ error: 'fullName is required' });
         return;
@@ -44,10 +44,6 @@ function validatePerson(req, res, next) {
     }
     if (typeof professionalQualificationId !== 'number') {
         res.status(400).json({ error: 'professionalQualificationId must be a number' });
-        return;
-    }
-    if (typeof certificateNumber !== 'string' || !certificateNumber.trim()) {
-        res.status(400).json({ error: 'certificateNumber is required' });
         return;
     }
     if (!dateReceived || isNaN(Date.parse(dateReceived))) {
@@ -144,7 +140,6 @@ app.post('/api/persons', validatePerson, (req, res) => __awaiter(void 0, void 0,
             fullName: req.body.fullName,
             qualificationCenterId: req.body.qualificationCenterId,
             professionalQualificationId: req.body.professionalQualificationId,
-            certificateNumber: req.body.certificateNumber,
             dateReceived: new Date(req.body.dateReceived)
         } });
     res.status(201).json(person);
@@ -156,7 +151,6 @@ app.put('/api/persons/:id', validatePerson, (req, res) => __awaiter(void 0, void
             fullName: req.body.fullName,
             qualificationCenterId: req.body.qualificationCenterId,
             professionalQualificationId: req.body.professionalQualificationId,
-            certificateNumber: req.body.certificateNumber,
             dateReceived: new Date(req.body.dateReceived)
         }
     });
@@ -362,3 +356,5 @@ else {
 // ─────────────────────────────────────────────────────
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`👉  http://localhost:${PORT}`));
+// DEBUG
+console.log('DATABASE_URL at runtime:', process.env.DATABASE_URL);
