@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { PrismaClient } from '../prisma/generated/client.js';
+import { PrismaClient } from '../prisma/generated/client/index.js';
 import type {
     Profession,
     ProfessionalQualification,
-} from '../prisma/generated/client.js';
+} from '../prisma/generated/client/index.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import path from 'path';
