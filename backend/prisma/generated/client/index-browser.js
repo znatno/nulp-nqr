@@ -120,7 +120,19 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.DeveloperScalarFieldEnum = {
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  role: 'role',
+  canApplyForQualification: 'canApplyForQualification',
+  canDevelopStandards: 'canDevelopStandards',
+  canAccreditCenters: 'canAccreditCenters',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.QualificationStandardDeveloperScalarFieldEnum = {
   id: 'id',
   name: 'name',
   edrpou: 'edrpou'
@@ -137,7 +149,7 @@ exports.Prisma.ProfessionScalarFieldEnum = {
 exports.Prisma.ProfessionalQualificationScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  nkrLevel: 'nkrLevel',
+  nqrLevel: 'nqrLevel',
   professionId: 'professionId'
 };
 
@@ -148,34 +160,63 @@ exports.Prisma.QualificationCenterScalarFieldEnum = {
   address: 'address'
 };
 
-exports.Prisma.AccreditationScalarFieldEnum = {
+exports.Prisma.QualificationCenterAccreditationScalarFieldEnum = {
   id: 'id',
   professionalQualificationId: 'professionalQualificationId',
   qualificationCenterId: 'qualificationCenterId',
+  accreditationDocumentId: 'accreditationDocumentId',
+  naqCommissionDate: 'naqCommissionDate',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  status: 'status'
+};
+
+exports.Prisma.ProfessionalScalarFieldEnum = {
+  id: 'id',
+  fullName: 'fullName',
+  qualificationCenterId: 'qualificationCenterId',
+  professionalQualificationId: 'professionalQualificationId',
   certificateNumber: 'certificateNumber',
-  sessionNQADate: 'sessionNQADate'
+  certificateReceivedAt: 'certificateReceivedAt',
+  userId: 'userId'
 };
 
-exports.Prisma.PersonScalarFieldEnum = {
+exports.Prisma.AccreditationExpertScalarFieldEnum = {
   id: 'id',
   fullName: 'fullName',
-  qualificationCenterId: 'qualificationCenterId',
   professionalQualificationId: 'professionalQualificationId',
-  dateReceived: 'dateReceived'
+  userId: 'userId'
 };
 
-exports.Prisma.ExpertScalarFieldEnum = {
-  id: 'id',
-  fullName: 'fullName',
-  professionalQualificationId: 'professionalQualificationId'
-};
-
-exports.Prisma.ExaminationScalarFieldEnum = {
+exports.Prisma.QualificationCenterExpertiseScalarFieldEnum = {
   id: 'id',
   professionalQualificationId: 'professionalQualificationId',
   qualificationCenterId: 'qualificationCenterId',
-  expertId: 'expertId',
-  examinationDate: 'examinationDate'
+  accreditationExpertId: 'accreditationExpertId',
+  expertiseDate: 'expertiseDate',
+  result: 'result',
+  notes: 'notes'
+};
+
+exports.Prisma.ApplicationScalarFieldEnum = {
+  id: 'id',
+  applicantId: 'applicantId',
+  professionalQualificationId: 'professionalQualificationId',
+  preferredQualificationCenterId: 'preferredQualificationCenterId',
+  qualificationCenterId: 'qualificationCenterId',
+  status: 'status',
+  comment: 'comment',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TestSessionScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  qualificationCenterId: 'qualificationCenterId',
+  scheduledAt: 'scheduledAt',
+  result: 'result',
+  notes: 'notes'
 };
 
 exports.Prisma.SortOrder = {
@@ -192,17 +233,46 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.Role = exports.$Enums.Role = {
+  VIEWER: 'VIEWER',
+  USER: 'USER',
+  MANAGER: 'MANAGER'
+};
 
+exports.AccreditationStatus = exports.$Enums.AccreditationStatus = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.ApplicationStatus = exports.$Enums.ApplicationStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  SCHEDULED: 'SCHEDULED',
+  TESTED: 'TESTED',
+  APPROVED: 'APPROVED',
+  REFUSED: 'REFUSED'
+};
+
+exports.TestResult = exports.$Enums.TestResult = {
+  PENDING: 'PENDING',
+  PASSED: 'PASSED',
+  FAILED: 'FAILED'
+};
 
 exports.Prisma.ModelName = {
-  Developer: 'Developer',
+  User: 'User',
+  QualificationStandardDeveloper: 'QualificationStandardDeveloper',
   Profession: 'Profession',
   ProfessionalQualification: 'ProfessionalQualification',
   QualificationCenter: 'QualificationCenter',
-  Accreditation: 'Accreditation',
-  Person: 'Person',
-  Expert: 'Expert',
-  Examination: 'Examination'
+  QualificationCenterAccreditation: 'QualificationCenterAccreditation',
+  Professional: 'Professional',
+  AccreditationExpert: 'AccreditationExpert',
+  QualificationCenterExpertise: 'QualificationCenterExpertise',
+  Application: 'Application',
+  TestSession: 'TestSession'
 };
 
 /**

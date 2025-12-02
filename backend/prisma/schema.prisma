@@ -7,111 +7,204 @@ datasource db {
   provider = "postgresql"
 }
 
+// -------------------- Auth & users (extension) --------------------
 
+enum Role {
+  VIEWER   // read-only or almost, basic account
+  USER     // normal authenticated user, with capabilities controlled by flags
+  MANAGER  // system manager/admin with full access
+}
 
-// Розробники
-// ID розробника, назва, код ЄДРПОУ
-model Developer {
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  passwordHash  String
+  role          Role           @default(USER)
+
+  // capability flags:
+  canApplyForQualification Boolean @default(false) // applicant
+  canDevelopStandards      Boolean @default(false) // qualification standard developer
+  canAccreditCenters       Boolean @default(false) // accreditation expert
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  applications  Application[]
+  professionals Professional[]
+  accreditationExperts AccreditationExpert[]
+}
+
+// -------------------- Core NQR tables --------------------
+
+// QualificationStandardDevelopers
+// QualificationStandardDeveloper ID, name, EDRPOU code (numbers only)
+model QualificationStandardDeveloper {
   id          Int          @id @default(autoincrement())
   name        String
-  edrpou      String?
+  edrpou      String
   professions Profession[]
 }
 
-// Професії
-// ID, назва, код ЄДРПОУ
+// Professions
+// Profession ID, name, code (ДК 003-2010), QualificationStandardDeveloper ID, approval date
 model Profession {
-  id           Int        @id @default(autoincrement())
-  name         String
-  code         String
-  developerId  Int
-  approvalDate DateTime   @default(now())
-  developer    Developer @relation(fields: [developerId], references: [id], onDelete: Restrict)
-  professionalQualifications ProfessionalQualification[]
-
-
-
+  id                             Int                            @id @default(autoincrement())
+  name                           String
+  code                           String
+  developerId                    Int
+  approvalDate                   DateTime                       @default(now())
+  qualificationStandardDeveloper QualificationStandardDeveloper @relation(fields: [developerId], references: [id], onDelete: Restrict)
+  professionalQualifications     ProfessionalQualification[]
 }
 
-// Профкваліфікації
-// ID, назва, код ЄДРПОУ
+// ProfessionalQualifications
+// ProfessionalQualification ID, name, NQF level (0–10), Profession ID
 model ProfessionalQualification {
-  id            Int           @id @default(autoincrement())
-  name          String
-  nkrLevel      Int
-  professionId  Int
-  profession    Profession    @relation(fields: [professionId], references: [id])
-  accreditations Accreditation[]
-  persons        Person[]
-  experts        Expert[]
-  examinations   Examination[]
+  id                                Int                                @id @default(autoincrement())
+  name                              String
+  nqrLevel                          Int
+  professionId                      Int
+  profession                        Profession                         @relation(fields: [professionId], references: [id])
+  qualificationCenterAccreditations QualificationCenterAccreditation[]
+
+  professionals                 Professional[]
+  accreditationExperts          AccreditationExpert[]
+  qualificationCenterExpertises QualificationCenterExpertise[]
+  applications                  Application[]
 }
 
-// Кваліфікаційні центри
-// ID квалцентру, назва центру, код ЄДРПОУ, адреса
+// QualificationCenters
+// QualificationCenter ID, name, EDRPOU code, address
 model QualificationCenter {
-  id              Int            @id @default(autoincrement())
-  name            String
-  edrpou          String
-  address         String
-  accreditations  Accreditation[]
-  persons         Person[]
-  examinations    Examination[]
+  id                                Int                                @id @default(autoincrement())
+  name                              String
+  edrpou                            String
+  address                           String
+  qualificationCenterAccreditations QualificationCenterAccreditation[]
+  professionals                     Professional[]
+  qualificationCenterExpertises     QualificationCenterExpertise[]
+  preferredApplications             Application[]                      @relation("ApplicationPreferredCenter")
+  assignedApplications              Application[]                       @relation("ApplicationAssignedCenter")
+  testSessions                      TestSession[]                      @relation("TestSessionCenter")
 }
 
-// Акредитації
-// ID акредитації, ID профквал, ID квалцентру, номер свідоцтва, дата засідання НАК (нац.агент.квал.)
-model Accreditation {
-  id                           Int @id @default(autoincrement())
-  professionalQualificationId  Int
-  qualificationCenterId        Int
-  certificateNumber            String
-  sessionNQADate               DateTime @default(now())
-  professionalQualification    ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
-  qualificationCenter          QualificationCenter @relation(fields: [qualificationCenterId], references: [id])
-
-  // одна комбінація - один запис
-  @@unique([professionalQualificationId, qualificationCenterId, certificateNumber])
+// QualificationCenterAccreditation
+// Accreditation ID, ProfessionalQualification ID, QualificationCenter ID,
+// accreditation document ID (external), NAQ commission date, start/end dates, status
+enum AccreditationStatus {
+  ACTIVE      // чинна
+  EXPIRED     // прострочена
+  CANCELLED   // скасована
 }
 
-// Особи (отримали профквал)
-// ID особи, ПІБ особи, ID квалцентру, ID профквал, номер свідоцтва, дата отримання
-model Person {
-  id                          Int @id @default(autoincrement())
+model QualificationCenterAccreditation {
+  id                          Int                       @id @default(autoincrement())
+  professionalQualificationId Int
+  qualificationCenterId       Int
+  accreditationDocumentId     String
+  naqCommissionDate           DateTime                  @default(now())
+  startDate                   DateTime                  @default(now())
+  endDate                     DateTime?
+  status                      AccreditationStatus       @default(ACTIVE)
+  professionalQualification   ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
+  qualificationCenter         QualificationCenter       @relation(fields: [qualificationCenterId], references: [id])
+
+  @@unique([professionalQualificationId, qualificationCenterId, accreditationDocumentId])
+}
+
+// Professionals
+// Professional ID, full name, QualificationCenter ID,
+// ProfessionalQualification ID, certificate number, certificate receiving date
+model Professional {
+  id                          Int                       @id @default(autoincrement())
   fullName                    String
   qualificationCenterId       Int
   professionalQualificationId Int
-  // awards                      ProfessionalQualification[]
-  // certificateNumber           String
-  dateReceived                DateTime @default(now())
-  qualificationCenter         QualificationCenter @relation(fields: [qualificationCenterId], references: [id])
+  certificateNumber           String
+  certificateReceivedAt       DateTime                  @default(now())
+  qualificationCenter         QualificationCenter       @relation(fields: [qualificationCenterId], references: [id])
   professionalQualification   ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
+  userId                      Int?
+  user                        User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  // унікальний номер сертифікату
-  // @@unique([certificateNumber])
+  @@unique([certificateNumber])
 }
 
-// Експерти
-// ID експерта, ПІБ, ID профкваліфікації
-model Expert {
-  id                         Int                      @id @default(autoincrement())
-  fullName                   String
-  professionalQualificationId Int
-  professionalQualification  ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
-  examinations               Examination[]
+// AccreditationExperts
+// AccreditationExpert ID, expert full name, ProfessionalQualification ID
+model AccreditationExpert {
+  id                            Int                            @id @default(autoincrement())
+  fullName                      String
+  professionalQualificationId   Int
+  professionalQualification     ProfessionalQualification      @relation(fields: [professionalQualificationId], references: [id])
+  qualificationCenterExpertises QualificationCenterExpertise[]
+  userId                        Int?
+  user                          User?                           @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
-// Експертизи
-// ID експертизи, ID профквал, ID квалцентру, ID експерта, дата
-model Examination {
-  id                          Int @id @default(autoincrement())
+// QualificationCenterExpertises
+// QualificationCenterExpertise ID, ProfessionalQualification ID,
+// QualificationCenter ID, AccreditationExpert ID, expertise date, result, notes
+model QualificationCenterExpertise {
+  id                          Int                       @id @default(autoincrement())
   professionalQualificationId Int
   qualificationCenterId       Int
-  expertId                    Int
-  examinationDate             DateTime @default(now())
+  accreditationExpertId       Int
+  expertiseDate               DateTime                  @default(now())
+  result                      String?                  // результат/висновок
+  notes                       String?                  // примітки
   professionalQualification   ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id])
-  qualificationCenter         QualificationCenter @relation(fields: [qualificationCenterId], references: [id])
-  expert                      Expert @relation(fields: [expertId], references: [id])
+  qualificationCenter         QualificationCenter       @relation(fields: [qualificationCenterId], references: [id])
+  accreditationExpert         AccreditationExpert       @relation(fields: [accreditationExpertId], references: [id])
 }
 
+// -------------------- Applications (extension) --------------------
 
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  SCHEDULED
+  TESTED
+  APPROVED
+  REFUSED
+}
+
+// Applications for qualification
+model Application {
+  id                            Int                       @id @default(autoincrement())
+  applicantId                   Int                       // FK -> User (applicant)
+  professionalQualificationId   Int
+  preferredQualificationCenterId Int?                     // applicant's preferred center (optional)
+  qualificationCenterId         Int?                      // assigned center by manager (required for test)
+  status                        ApplicationStatus         @default(DRAFT)
+  comment                       String?
+  createdAt                     DateTime                  @default(now())
+  updatedAt                     DateTime                  @updatedAt
+
+  applicant                     User                      @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  professionalQualification     ProfessionalQualification @relation(fields: [professionalQualificationId], references: [id], onDelete: Restrict)
+  preferredQualificationCenter  QualificationCenter?      @relation("ApplicationPreferredCenter", fields: [preferredQualificationCenterId], references: [id], onDelete: SetNull)
+  assignedQualificationCenter   QualificationCenter?      @relation("ApplicationAssignedCenter", fields: [qualificationCenterId], references: [id], onDelete: SetNull)
+  testSessions                  TestSession[]
+}
+
+// -------------------- Test Sessions (extension) --------------------
+
+enum TestResult {
+  PENDING
+  PASSED
+  FAILED
+}
+
+// TestSession represents certification tests linked to applications and centers
+model TestSession {
+  id                    Int      @id @default(autoincrement())
+  applicationId         Int
+  qualificationCenterId  Int
+  scheduledAt           DateTime
+  result                TestResult   @default(PENDING)
+  notes                 String?
+
+  application           Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  qualificationCenter   QualificationCenter @relation("TestSessionCenter", fields: [qualificationCenterId], references: [id], onDelete: Restrict)
+}

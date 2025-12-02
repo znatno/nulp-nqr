@@ -1,4 +1,6 @@
-# Backend Setup Guide
+# NQF Register Backend
+
+Backend API for the National Qualifications Register (Національний реєстр кваліфікацій / NQR).
 
 This backend uses Prisma to connect to a PostgreSQL database. Configure your connection details before starting the API so the frontend can successfully load the database overview.
 

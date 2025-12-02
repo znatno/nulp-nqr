@@ -1,18 +1,22 @@
-# Vue 3 + TypeScript + Vite
+# NQF Register Frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Frontend application for the National Qualifications Register (Національний реєстр кваліфікацій / NQR).
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+Built with Vue 3, TypeScript, and Vite.
 
-### FE-side project structure for now:
+### Project structure:
 ```
 frontend/
 ├─ src/
 │  ├─ assets/            (main.css with Tailwind directives)
+│  ├─ components/        (Sidebar, CrudTable)
+│  ├─ composables/       (useAuth, useRole)
+│  ├─ config/           (entitiesConfig)
 │  ├─ layouts/           AdminLayout.vue
-│  ├─ pages/             Qualifications.vue   ← single CRUD page
+│  ├─ pages/             (NQR-specific views)
 │  ├─ router/            index.ts
 │  ├─ services/          api.ts
+│  ├─ types/             (auth types)
 │  └─ main.ts
 └─ tailwind.config.js
 ```

@@ -17,3 +17,12 @@ function normalizeBaseUrl(url: string | undefined): string {
 }
 
 export const api = axios.create({ baseURL: normalizeBaseUrl(rawBaseUrl) });
+
+// Add Authorization header to all requests if token exists
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});

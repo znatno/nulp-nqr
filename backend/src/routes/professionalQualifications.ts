@@ -1,0 +1,213 @@
+import { Router, Request, Response } from 'express';
+import { PrismaClient } from '../../prisma/generated/client/index.js';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+import { requireManager } from '../middleware/auth.js';
+
+const router = Router();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+/**
+ * GET /api/professional-qualifications
+ * Get paginated list of professional qualifications with optional search
+ * Query params: page, pageSize, search
+ */
+router.get('/', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const page = Math.max(1, parseInt(req.query.page as string) || 1);
+        const pageSize = Math.max(1, Math.min(100, parseInt(req.query.pageSize as string) || 10));
+        const search = (req.query.search as string)?.trim() || '';
+
+        const skip = (page - 1) * pageSize;
+
+        // Build where clause for search
+        const where = search
+            ? {
+                  OR: [
+                      { name: { contains: search, mode: 'insensitive' as const } },
+                  ],
+              }
+            : {};
+
+        // Get total count and items
+        const [total, items] = await Promise.all([
+            prisma.professionalQualification.count({ where }),
+            prisma.professionalQualification.findMany({
+                where,
+                skip,
+                take: pageSize,
+                orderBy: { id: 'asc' },
+                include: { profession: true },
+            }),
+        ]);
+
+        res.json({
+            items,
+            total,
+            page,
+            pageSize,
+        });
+    } catch (err) {
+        console.error('Failed to get professional qualifications', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * GET /api/professional-qualifications/:id
+ * Get a single professional qualification by ID
+ */
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            res.status(400).json({ error: 'Invalid ID' });
+            return;
+        }
+
+        const qualification = await prisma.professionalQualification.findUnique({
+            where: { id },
+            include: { profession: true },
+        });
+
+        if (!qualification) {
+            res.sendStatus(404);
+            return;
+        }
+
+        res.json(qualification);
+    } catch (err) {
+        console.error('Failed to get professional qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * POST /api/professional-qualifications
+ * Create a new professional qualification
+ * Requires MANAGER role
+ */
+router.post('/', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    const { name, nqrLevel, professionId } = req.body as {
+        name?: unknown;
+        nqrLevel?: unknown;
+        professionId?: unknown;
+    };
+
+    // Validation
+    if (typeof name !== 'string' || !name.trim()) {
+        res.status(400).json({ error: 'Name is required' });
+        return;
+    }
+    if (typeof nqrLevel !== 'number' || !Number.isInteger(nqrLevel)) {
+        res.status(400).json({ error: 'nqrLevel must be an integer' });
+        return;
+    }
+    if (typeof professionId !== 'number' || !Number.isInteger(professionId)) {
+        res.status(400).json({ error: 'professionId must be an integer' });
+        return;
+    }
+
+    try {
+        const qualification = await prisma.professionalQualification.create({
+            data: {
+                name: name.trim(),
+                nqrLevel,
+                professionId,
+            },
+            include: { profession: true },
+        });
+        res.status(201).json(qualification);
+    } catch (err) {
+        console.error('Failed to create professional qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * PUT /api/professional-qualifications/:id
+ * Update an existing professional qualification
+ * Requires MANAGER role
+ */
+router.put('/:id', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+
+    const { name, nqrLevel, professionId } = req.body as {
+        name?: unknown;
+        nqrLevel?: unknown;
+        professionId?: unknown;
+    };
+
+    // Validation
+    if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
+        res.status(400).json({ error: 'Name must be a non-empty string' });
+        return;
+    }
+    if (nqrLevel !== undefined && (typeof nqrLevel !== 'number' || !Number.isInteger(nqrLevel))) {
+        res.status(400).json({ error: 'nqrLevel must be an integer' });
+        return;
+    }
+    if (professionId !== undefined && (typeof professionId !== 'number' || !Number.isInteger(professionId))) {
+        res.status(400).json({ error: 'professionId must be an integer' });
+        return;
+    }
+
+    try {
+        // Check if qualification exists
+        const existing = await prisma.professionalQualification.findUnique({ where: { id } });
+        if (!existing) {
+            res.sendStatus(404);
+            return;
+        }
+
+        const qualification = await prisma.professionalQualification.update({
+            where: { id },
+            data: {
+                ...(name !== undefined ? { name: name.trim() } : {}),
+                ...(nqrLevel !== undefined ? { nqrLevel } : {}),
+                ...(professionId !== undefined ? { professionId } : {}),
+            },
+            include: { profession: true },
+        });
+        res.json(qualification);
+    } catch (err) {
+        console.error('Failed to update professional qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
+ * DELETE /api/professional-qualifications/:id
+ * Delete a professional qualification
+ * Requires MANAGER role
+ */
+router.delete('/:id', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+        res.status(400).json({ error: 'Invalid ID' });
+        return;
+    }
+
+    try {
+        // Check if qualification exists
+        const existing = await prisma.professionalQualification.findUnique({ where: { id } });
+        if (!existing) {
+            res.sendStatus(404);
+            return;
+        }
+
+        await prisma.professionalQualification.delete({ where: { id } });
+        res.sendStatus(204);
+    } catch (err) {
+        console.error('Failed to delete professional qualification', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+export default router;
