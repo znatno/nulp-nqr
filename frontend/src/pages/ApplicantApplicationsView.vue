@@ -185,7 +185,6 @@ onMounted(loadApplications);
                         <th class="pb-3 px-4 pt-3">Центр</th>
                         <th class="pb-3 px-4 pt-3">Кваліфікація</th>
                         <th class="pb-3 px-4 pt-3">Статус</th>
-                        <th class="pb-3 px-4 pt-3">Бажана дата</th>
                         <th class="pb-3 px-4 pt-3">Дата створення</th>
                     </tr>
                 </thead>
@@ -197,13 +196,16 @@ onMounted(loadApplications);
                     >
                         <td class="py-3 px-4">{{ app.id }}</td>
                         <td class="py-3 px-4">
-                            <div class="font-medium">{{ app.qualificationCenter.name }}</div>
-                            <div class="text-xs text-gray-500">{{ app.qualificationCenter.edrpou }}</div>
+                            <div v-if="app.assignedQualificationCenter" class="font-medium">{{ app.assignedQualificationCenter.name }}</div>
+                            <div v-else-if="app.preferredQualificationCenter" class="font-medium text-gray-500">{{ app.preferredQualificationCenter.name }} (бажаний)</div>
+                            <div v-else class="text-gray-400">Не призначено</div>
+                            <div v-if="app.assignedQualificationCenter" class="text-xs text-gray-500">{{ app.assignedQualificationCenter.edrpou }}</div>
+                            <div v-else-if="app.preferredQualificationCenter" class="text-xs text-gray-500">{{ app.preferredQualificationCenter.edrpou }}</div>
                         </td>
                         <td class="py-3 px-4">
                             <div class="font-medium">{{ app.professionalQualification.name }}</div>
                             <div class="text-xs text-gray-500">
-                                Рівень НКР: {{ app.professionalQualification.nkrLevel }}
+                                Рівень НКР: {{ app.professionalQualification.nqrLevel }}
                                 <span v-if="app.professionalQualification.profession">
                                     | {{ app.professionalQualification.profession.name }}
                                 </span>
@@ -219,7 +221,7 @@ onMounted(loadApplications);
                                 {{ getStatusLabel(app.status) }}
                             </span>
                         </td>
-                        <td class="py-3 px-4">{{ formatDate(app.preferredDate) }}</td>
+                        <td class="py-3 px-4">-</td>
                         <td class="py-3 px-4">{{ formatDate(app.createdAt) }}</td>
                     </tr>
                     <tr v-if="filteredApplications.length === 0">

@@ -17,7 +17,7 @@ interface Qualification {
 interface ProfessionalQualification {
   id: number;
   name: string;
-  nkrLevel: number;
+  nqrLevel: number;
   profession?: Profession | null;
 }
 
@@ -143,7 +143,7 @@ onMounted(load);
             >
               <td class="py-3 px-4">{{ qualification.id }}</td>
               <td class="py-3 px-4 font-medium">{{ qualification.name }}</td>
-              <td class="py-3 px-4">{{ qualification.nkrLevel }}</td>
+              <td class="py-3 px-4">{{ qualification.nqrLevel }}</td>
               <td class="py-3 px-4">{{ formatProfession(qualification.profession) }}</td>
             </tr>
           </tbody>

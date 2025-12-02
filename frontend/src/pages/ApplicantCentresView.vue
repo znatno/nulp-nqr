@@ -12,7 +12,7 @@ interface QualificationCenter {
 interface ProfessionalQualification {
     id: number;
     name: string;
-    nkrLevel: number;
+    nqrLevel: number;
     profession: {
         id: number;
         name: string;
@@ -216,7 +216,7 @@ onMounted(loadCentres);
                             <div class="flex-1">
                                 <div class="font-medium text-slate-900">{{ qual.name }}</div>
                                 <div class="text-sm text-slate-600 mt-1">
-                                    Рівень НКР: {{ qual.nkrLevel }}
+                                    Рівень НКР: {{ qual.nqrLevel }}
                                     <span v-if="qual.profession">
                                         | Професія: {{ qual.profession.name }} ({{ qual.profession.code }})
                                     </span>

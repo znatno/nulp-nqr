@@ -169,6 +169,12 @@ const router = createRouter({
                     meta: { roles: ['MANAGER'], title: 'Акредитації' },
                 },
                 {
+                    path: 'experts',
+                    name: 'manager-experts',
+                    component: () => import('@/pages/ManagerExpertsView.vue'),
+                    meta: { roles: ['MANAGER'], title: 'Експерти' },
+                },
+                {
                     path: 'examinations',
                     name: 'manager-examinations',
                     component: ManagerExaminationsView,

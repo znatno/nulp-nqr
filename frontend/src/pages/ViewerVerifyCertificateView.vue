@@ -13,7 +13,7 @@ interface VerificationResult {
     qualification?: {
         id: number;
         name: string;
-        nkrLevel: number;
+        nqrLevel: number;
         profession: {
             id: number;
             name: string;
@@ -254,7 +254,7 @@ function handleReset() {
                     <div class="text-sm text-gray-500">Кваліфікація</div>
                     <div class="font-medium">{{ result.qualification?.name || '-' }}</div>
                     <div v-if="result.qualification" class="text-xs text-gray-500 mt-1">
-                        Рівень НКР: {{ result.qualification.nkrLevel }}
+                        Рівень НКР: {{ result.qualification.nqrLevel }}
                         <span v-if="result.qualification.profession">
                             | {{ result.qualification.profession.name }} ({{ result.qualification.profession.code }})
                         </span>

@@ -135,7 +135,8 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.QualificationStandardDeveloperScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  edrpou: 'edrpou'
+  edrpou: 'edrpou',
+  userId: 'userId'
 };
 
 exports.Prisma.ProfessionScalarFieldEnum = {

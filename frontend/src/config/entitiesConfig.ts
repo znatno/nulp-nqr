@@ -84,12 +84,12 @@ export const entitiesConfig: Record<string, EntityConfig> = {
         columns: [
             { key: 'id', label: 'ID', sortable: true },
             { key: 'name', label: 'Назва', sortable: true },
-            { key: 'nkrLevel', label: 'Рівень НКР', sortable: true },
+            { key: 'nqrLevel', label: 'Рівень НКР', sortable: true },
             { key: 'profession', label: 'Професія', sortable: false },
         ],
         formFields: [
             { key: 'name', label: 'Назва', type: 'text', required: true },
-            { key: 'nkrLevel', label: 'Рівень НКР', type: 'number', required: true },
+            { key: 'nqrLevel', label: 'Рівень НКР', type: 'number', required: true },
             { key: 'professionId', label: 'ID Професії', type: 'number', required: true },
         ],
         searchableFields: ['name'],
@@ -156,6 +156,25 @@ export const entitiesConfig: Record<string, EntityConfig> = {
             { key: 'examinationDate', label: 'Дата експертизи', type: 'text', required: false },
         ],
         searchableFields: [],
+        defaultSort: {
+            field: 'id',
+            direction: 'asc',
+        },
+    },
+    experts: {
+        apiBasePath: '/experts',
+        columns: [
+            { key: 'id', label: 'ID', sortable: true },
+            { key: 'fullName', label: 'ПІБ', sortable: true },
+            { key: 'professionalQualification', label: 'Профкваліфікація', sortable: false },
+            { key: 'user', label: 'Користувач', sortable: false },
+        ],
+        formFields: [
+            { key: 'fullName', label: 'ПІБ', type: 'text', required: true },
+            { key: 'professionalQualificationId', label: 'ID Профкваліфікації', type: 'number', required: true },
+            { key: 'userId', label: 'ID Користувача (опціонально)', type: 'number', required: false },
+        ],
+        searchableFields: ['fullName'],
         defaultSort: {
             field: 'id',
             direction: 'asc',

@@ -9,7 +9,7 @@ interface Certificate {
     qualification: {
         id: number;
         name: string;
-        nkrLevel: number;
+        nqrLevel: number;
         profession: {
             id: number;
             name: string;
@@ -116,7 +116,7 @@ onMounted(loadCertificates);
                         <td class="py-3 px-4">
                             <div class="font-medium">{{ cert.qualification.name }}</div>
                             <div class="text-xs text-gray-500">
-                                Рівень НКР: {{ cert.qualification.nkrLevel }}
+                                Рівень НКР: {{ cert.qualification.nqrLevel }}
                                 <span v-if="cert.qualification.profession">
                                     | {{ cert.qualification.profession.name }} ({{ cert.qualification.profession.code }})
                                 </span>

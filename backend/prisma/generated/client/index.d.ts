@@ -2365,6 +2365,7 @@ export namespace Prisma {
     applications?: boolean | User$applicationsArgs<ExtArgs>
     professionals?: boolean | User$professionalsArgs<ExtArgs>
     accreditationExperts?: boolean | User$accreditationExpertsArgs<ExtArgs>
+    qualificationStandardDeveloper?: boolean | User$qualificationStandardDeveloperArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2409,6 +2410,7 @@ export namespace Prisma {
     applications?: boolean | User$applicationsArgs<ExtArgs>
     professionals?: boolean | User$professionalsArgs<ExtArgs>
     accreditationExperts?: boolean | User$accreditationExpertsArgs<ExtArgs>
+    qualificationStandardDeveloper?: boolean | User$qualificationStandardDeveloperArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2420,6 +2422,7 @@ export namespace Prisma {
       applications: Prisma.$ApplicationPayload<ExtArgs>[]
       professionals: Prisma.$ProfessionalPayload<ExtArgs>[]
       accreditationExperts: Prisma.$AccreditationExpertPayload<ExtArgs>[]
+      qualificationStandardDeveloper: Prisma.$QualificationStandardDeveloperPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -2828,6 +2831,7 @@ export namespace Prisma {
     applications<T extends User$applicationsArgs<ExtArgs> = {}>(args?: Subset<T, User$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     professionals<T extends User$professionalsArgs<ExtArgs> = {}>(args?: Subset<T, User$professionalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProfessionalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     accreditationExperts<T extends User$accreditationExpertsArgs<ExtArgs> = {}>(args?: Subset<T, User$accreditationExpertsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccreditationExpertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    qualificationStandardDeveloper<T extends User$qualificationStandardDeveloperArgs<ExtArgs> = {}>(args?: Subset<T, User$qualificationStandardDeveloperArgs<ExtArgs>>): Prisma__QualificationStandardDeveloperClient<$Result.GetResult<Prisma.$QualificationStandardDeveloperPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3326,6 +3330,25 @@ export namespace Prisma {
   }
 
   /**
+   * User.qualificationStandardDeveloper
+   */
+  export type User$qualificationStandardDeveloperArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the QualificationStandardDeveloper
+     */
+    select?: QualificationStandardDeveloperSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the QualificationStandardDeveloper
+     */
+    omit?: QualificationStandardDeveloperOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationStandardDeveloperInclude<ExtArgs> | null
+    where?: QualificationStandardDeveloperWhereInput
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3358,56 +3381,66 @@ export namespace Prisma {
 
   export type QualificationStandardDeveloperAvgAggregateOutputType = {
     id: number | null
+    userId: number | null
   }
 
   export type QualificationStandardDeveloperSumAggregateOutputType = {
     id: number | null
+    userId: number | null
   }
 
   export type QualificationStandardDeveloperMinAggregateOutputType = {
     id: number | null
     name: string | null
     edrpou: string | null
+    userId: number | null
   }
 
   export type QualificationStandardDeveloperMaxAggregateOutputType = {
     id: number | null
     name: string | null
     edrpou: string | null
+    userId: number | null
   }
 
   export type QualificationStandardDeveloperCountAggregateOutputType = {
     id: number
     name: number
     edrpou: number
+    userId: number
     _all: number
   }
 
 
   export type QualificationStandardDeveloperAvgAggregateInputType = {
     id?: true
+    userId?: true
   }
 
   export type QualificationStandardDeveloperSumAggregateInputType = {
     id?: true
+    userId?: true
   }
 
   export type QualificationStandardDeveloperMinAggregateInputType = {
     id?: true
     name?: true
     edrpou?: true
+    userId?: true
   }
 
   export type QualificationStandardDeveloperMaxAggregateInputType = {
     id?: true
     name?: true
     edrpou?: true
+    userId?: true
   }
 
   export type QualificationStandardDeveloperCountAggregateInputType = {
     id?: true
     name?: true
     edrpou?: true
+    userId?: true
     _all?: true
   }
 
@@ -3501,6 +3534,7 @@ export namespace Prisma {
     id: number
     name: string
     edrpou: string
+    userId: number | null
     _count: QualificationStandardDeveloperCountAggregateOutputType | null
     _avg: QualificationStandardDeveloperAvgAggregateOutputType | null
     _sum: QualificationStandardDeveloperSumAggregateOutputType | null
@@ -3526,6 +3560,8 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     edrpou?: boolean
+    userId?: boolean
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
     professions?: boolean | QualificationStandardDeveloper$professionsArgs<ExtArgs>
     _count?: boolean | QualificationStandardDeveloperCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationStandardDeveloper"]>
@@ -3534,37 +3570,49 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     edrpou?: boolean
+    userId?: boolean
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationStandardDeveloper"]>
 
   export type QualificationStandardDeveloperSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
     edrpou?: boolean
+    userId?: boolean
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
   }, ExtArgs["result"]["qualificationStandardDeveloper"]>
 
   export type QualificationStandardDeveloperSelectScalar = {
     id?: boolean
     name?: boolean
     edrpou?: boolean
+    userId?: boolean
   }
 
-  export type QualificationStandardDeveloperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "edrpou", ExtArgs["result"]["qualificationStandardDeveloper"]>
+  export type QualificationStandardDeveloperOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "edrpou" | "userId", ExtArgs["result"]["qualificationStandardDeveloper"]>
   export type QualificationStandardDeveloperInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
     professions?: boolean | QualificationStandardDeveloper$professionsArgs<ExtArgs>
     _count?: boolean | QualificationStandardDeveloperCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type QualificationStandardDeveloperIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type QualificationStandardDeveloperIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type QualificationStandardDeveloperIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
+  }
+  export type QualificationStandardDeveloperIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | QualificationStandardDeveloper$userArgs<ExtArgs>
+  }
 
   export type $QualificationStandardDeveloperPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "QualificationStandardDeveloper"
     objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
       professions: Prisma.$ProfessionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       name: string
       edrpou: string
+      userId: number | null
     }, ExtArgs["result"]["qualificationStandardDeveloper"]>
     composites: {}
   }
@@ -3959,6 +4007,7 @@ export namespace Prisma {
    */
   export interface Prisma__QualificationStandardDeveloperClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends QualificationStandardDeveloper$userArgs<ExtArgs> = {}>(args?: Subset<T, QualificationStandardDeveloper$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     professions<T extends QualificationStandardDeveloper$professionsArgs<ExtArgs> = {}>(args?: Subset<T, QualificationStandardDeveloper$professionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProfessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3992,6 +4041,7 @@ export namespace Prisma {
     readonly id: FieldRef<"QualificationStandardDeveloper", 'Int'>
     readonly name: FieldRef<"QualificationStandardDeveloper", 'String'>
     readonly edrpou: FieldRef<"QualificationStandardDeveloper", 'String'>
+    readonly userId: FieldRef<"QualificationStandardDeveloper", 'Int'>
   }
     
 
@@ -4241,6 +4291,10 @@ export namespace Prisma {
      */
     data: QualificationStandardDeveloperCreateManyInput | QualificationStandardDeveloperCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationStandardDeveloperIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4311,6 +4365,10 @@ export namespace Prisma {
      * Limit how many QualificationStandardDevelopers to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: QualificationStandardDeveloperIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4377,6 +4435,25 @@ export namespace Prisma {
      * Limit how many QualificationStandardDevelopers to delete.
      */
     limit?: number
+  }
+
+  /**
+   * QualificationStandardDeveloper.user
+   */
+  export type QualificationStandardDeveloper$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -15015,7 +15092,8 @@ export namespace Prisma {
   export const QualificationStandardDeveloperScalarFieldEnum: {
     id: 'id',
     name: 'name',
-    edrpou: 'edrpou'
+    edrpou: 'edrpou',
+    userId: 'userId'
   };
 
   export type QualificationStandardDeveloperScalarFieldEnum = (typeof QualificationStandardDeveloperScalarFieldEnum)[keyof typeof QualificationStandardDeveloperScalarFieldEnum]
@@ -15296,6 +15374,7 @@ export namespace Prisma {
     applications?: ApplicationListRelationFilter
     professionals?: ProfessionalListRelationFilter
     accreditationExperts?: AccreditationExpertListRelationFilter
+    qualificationStandardDeveloper?: XOR<QualificationStandardDeveloperNullableScalarRelationFilter, QualificationStandardDeveloperWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -15311,6 +15390,7 @@ export namespace Prisma {
     applications?: ApplicationOrderByRelationAggregateInput
     professionals?: ProfessionalOrderByRelationAggregateInput
     accreditationExperts?: AccreditationExpertOrderByRelationAggregateInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -15329,6 +15409,7 @@ export namespace Prisma {
     applications?: ApplicationListRelationFilter
     professionals?: ProfessionalListRelationFilter
     accreditationExperts?: AccreditationExpertListRelationFilter
+    qualificationStandardDeveloper?: XOR<QualificationStandardDeveloperNullableScalarRelationFilter, QualificationStandardDeveloperWhereInput> | null
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -15370,6 +15451,8 @@ export namespace Prisma {
     id?: IntFilter<"QualificationStandardDeveloper"> | number
     name?: StringFilter<"QualificationStandardDeveloper"> | string
     edrpou?: StringFilter<"QualificationStandardDeveloper"> | string
+    userId?: IntNullableFilter<"QualificationStandardDeveloper"> | number | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     professions?: ProfessionListRelationFilter
   }
 
@@ -15377,23 +15460,28 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     edrpou?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
     professions?: ProfessionOrderByRelationAggregateInput
   }
 
   export type QualificationStandardDeveloperWhereUniqueInput = Prisma.AtLeast<{
     id?: number
+    userId?: number
     AND?: QualificationStandardDeveloperWhereInput | QualificationStandardDeveloperWhereInput[]
     OR?: QualificationStandardDeveloperWhereInput[]
     NOT?: QualificationStandardDeveloperWhereInput | QualificationStandardDeveloperWhereInput[]
     name?: StringFilter<"QualificationStandardDeveloper"> | string
     edrpou?: StringFilter<"QualificationStandardDeveloper"> | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     professions?: ProfessionListRelationFilter
-  }, "id">
+  }, "id" | "userId">
 
   export type QualificationStandardDeveloperOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
     edrpou?: SortOrder
+    userId?: SortOrderInput | SortOrder
     _count?: QualificationStandardDeveloperCountOrderByAggregateInput
     _avg?: QualificationStandardDeveloperAvgOrderByAggregateInput
     _max?: QualificationStandardDeveloperMaxOrderByAggregateInput
@@ -15408,6 +15496,7 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"QualificationStandardDeveloper"> | number
     name?: StringWithAggregatesFilter<"QualificationStandardDeveloper"> | string
     edrpou?: StringWithAggregatesFilter<"QualificationStandardDeveloper"> | string
+    userId?: IntNullableWithAggregatesFilter<"QualificationStandardDeveloper"> | number | null
   }
 
   export type ProfessionWhereInput = {
@@ -16050,6 +16139,7 @@ export namespace Prisma {
     applications?: ApplicationCreateNestedManyWithoutApplicantInput
     professionals?: ProfessionalCreateNestedManyWithoutUserInput
     accreditationExperts?: AccreditationExpertCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -16065,6 +16155,7 @@ export namespace Prisma {
     applications?: ApplicationUncheckedCreateNestedManyWithoutApplicantInput
     professionals?: ProfessionalUncheckedCreateNestedManyWithoutUserInput
     accreditationExperts?: AccreditationExpertUncheckedCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -16079,6 +16170,7 @@ export namespace Prisma {
     applications?: ApplicationUpdateManyWithoutApplicantNestedInput
     professionals?: ProfessionalUpdateManyWithoutUserNestedInput
     accreditationExperts?: AccreditationExpertUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -16094,6 +16186,7 @@ export namespace Prisma {
     applications?: ApplicationUncheckedUpdateManyWithoutApplicantNestedInput
     professionals?: ProfessionalUncheckedUpdateManyWithoutUserNestedInput
     accreditationExperts?: AccreditationExpertUncheckedUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -16134,6 +16227,7 @@ export namespace Prisma {
   export type QualificationStandardDeveloperCreateInput = {
     name: string
     edrpou: string
+    user?: UserCreateNestedOneWithoutQualificationStandardDeveloperInput
     professions?: ProfessionCreateNestedManyWithoutQualificationStandardDeveloperInput
   }
 
@@ -16141,12 +16235,14 @@ export namespace Prisma {
     id?: number
     name: string
     edrpou: string
+    userId?: number | null
     professions?: ProfessionUncheckedCreateNestedManyWithoutQualificationStandardDeveloperInput
   }
 
   export type QualificationStandardDeveloperUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
     edrpou?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneWithoutQualificationStandardDeveloperNestedInput
     professions?: ProfessionUpdateManyWithoutQualificationStandardDeveloperNestedInput
   }
 
@@ -16154,6 +16250,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     edrpou?: StringFieldUpdateOperationsInput | string
+    userId?: NullableIntFieldUpdateOperationsInput | number | null
     professions?: ProfessionUncheckedUpdateManyWithoutQualificationStandardDeveloperNestedInput
   }
 
@@ -16161,6 +16258,7 @@ export namespace Prisma {
     id?: number
     name: string
     edrpou: string
+    userId?: number | null
   }
 
   export type QualificationStandardDeveloperUpdateManyMutationInput = {
@@ -16172,6 +16270,7 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     edrpou?: StringFieldUpdateOperationsInput | string
+    userId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProfessionCreateInput = {
@@ -16819,6 +16918,11 @@ export namespace Prisma {
     none?: AccreditationExpertWhereInput
   }
 
+  export type QualificationStandardDeveloperNullableScalarRelationFilter = {
+    is?: QualificationStandardDeveloperWhereInput | null
+    isNot?: QualificationStandardDeveloperWhereInput | null
+  }
+
   export type ApplicationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -16941,10 +17045,31 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
   export type ProfessionListRelationFilter = {
     every?: ProfessionWhereInput
     some?: ProfessionWhereInput
     none?: ProfessionWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type ProfessionOrderByRelationAggregateInput = {
@@ -16955,26 +17080,47 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     edrpou?: SortOrder
+    userId?: SortOrder
   }
 
   export type QualificationStandardDeveloperAvgOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
   }
 
   export type QualificationStandardDeveloperMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     edrpou?: SortOrder
+    userId?: SortOrder
   }
 
   export type QualificationStandardDeveloperMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     edrpou?: SortOrder
+    userId?: SortOrder
   }
 
   export type QualificationStandardDeveloperSumOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type QualificationStandardDeveloperScalarRelationFilter = {
@@ -17151,11 +17297,6 @@ export namespace Prisma {
     isNot?: QualificationCenterWhereInput
   }
 
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
-  }
-
   export type QualificationCenterAccreditationProfessionalQualificationIdQualificationCenterIdAccreditationDocumentIdCompoundUniqueInput = {
     professionalQualificationId: number
     qualificationCenterId: number
@@ -17231,22 +17372,6 @@ export namespace Prisma {
     _max?: NestedEnumAccreditationStatusFilter<$PrismaModel>
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
   export type ProfessionalCountOrderByAggregateInput = {
     id?: SortOrder
     fullName?: SortOrder
@@ -17289,22 +17414,6 @@ export namespace Prisma {
     qualificationCenterId?: SortOrder
     professionalQualificationId?: SortOrder
     userId?: SortOrder
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type AccreditationExpertCountOrderByAggregateInput = {
@@ -17583,6 +17692,12 @@ export namespace Prisma {
     connect?: AccreditationExpertWhereUniqueInput | AccreditationExpertWhereUniqueInput[]
   }
 
+  export type QualificationStandardDeveloperCreateNestedOneWithoutUserInput = {
+    create?: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+    connectOrCreate?: QualificationStandardDeveloperCreateOrConnectWithoutUserInput
+    connect?: QualificationStandardDeveloperWhereUniqueInput
+  }
+
   export type ApplicationUncheckedCreateNestedManyWithoutApplicantInput = {
     create?: XOR<ApplicationCreateWithoutApplicantInput, ApplicationUncheckedCreateWithoutApplicantInput> | ApplicationCreateWithoutApplicantInput[] | ApplicationUncheckedCreateWithoutApplicantInput[]
     connectOrCreate?: ApplicationCreateOrConnectWithoutApplicantInput | ApplicationCreateOrConnectWithoutApplicantInput[]
@@ -17602,6 +17717,12 @@ export namespace Prisma {
     connectOrCreate?: AccreditationExpertCreateOrConnectWithoutUserInput | AccreditationExpertCreateOrConnectWithoutUserInput[]
     createMany?: AccreditationExpertCreateManyUserInputEnvelope
     connect?: AccreditationExpertWhereUniqueInput | AccreditationExpertWhereUniqueInput[]
+  }
+
+  export type QualificationStandardDeveloperUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+    connectOrCreate?: QualificationStandardDeveloperCreateOrConnectWithoutUserInput
+    connect?: QualificationStandardDeveloperWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -17662,6 +17783,16 @@ export namespace Prisma {
     deleteMany?: AccreditationExpertScalarWhereInput | AccreditationExpertScalarWhereInput[]
   }
 
+  export type QualificationStandardDeveloperUpdateOneWithoutUserNestedInput = {
+    create?: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+    connectOrCreate?: QualificationStandardDeveloperCreateOrConnectWithoutUserInput
+    upsert?: QualificationStandardDeveloperUpsertWithoutUserInput
+    disconnect?: QualificationStandardDeveloperWhereInput | boolean
+    delete?: QualificationStandardDeveloperWhereInput | boolean
+    connect?: QualificationStandardDeveloperWhereUniqueInput
+    update?: XOR<XOR<QualificationStandardDeveloperUpdateToOneWithWhereWithoutUserInput, QualificationStandardDeveloperUpdateWithoutUserInput>, QualificationStandardDeveloperUncheckedUpdateWithoutUserInput>
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -17712,6 +17843,22 @@ export namespace Prisma {
     deleteMany?: AccreditationExpertScalarWhereInput | AccreditationExpertScalarWhereInput[]
   }
 
+  export type QualificationStandardDeveloperUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+    connectOrCreate?: QualificationStandardDeveloperCreateOrConnectWithoutUserInput
+    upsert?: QualificationStandardDeveloperUpsertWithoutUserInput
+    disconnect?: QualificationStandardDeveloperWhereInput | boolean
+    delete?: QualificationStandardDeveloperWhereInput | boolean
+    connect?: QualificationStandardDeveloperWhereUniqueInput
+    update?: XOR<XOR<QualificationStandardDeveloperUpdateToOneWithWhereWithoutUserInput, QualificationStandardDeveloperUpdateWithoutUserInput>, QualificationStandardDeveloperUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserCreateNestedOneWithoutQualificationStandardDeveloperInput = {
+    create?: XOR<UserCreateWithoutQualificationStandardDeveloperInput, UserUncheckedCreateWithoutQualificationStandardDeveloperInput>
+    connectOrCreate?: UserCreateOrConnectWithoutQualificationStandardDeveloperInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type ProfessionCreateNestedManyWithoutQualificationStandardDeveloperInput = {
     create?: XOR<ProfessionCreateWithoutQualificationStandardDeveloperInput, ProfessionUncheckedCreateWithoutQualificationStandardDeveloperInput> | ProfessionCreateWithoutQualificationStandardDeveloperInput[] | ProfessionUncheckedCreateWithoutQualificationStandardDeveloperInput[]
     connectOrCreate?: ProfessionCreateOrConnectWithoutQualificationStandardDeveloperInput | ProfessionCreateOrConnectWithoutQualificationStandardDeveloperInput[]
@@ -17726,6 +17873,16 @@ export namespace Prisma {
     connect?: ProfessionWhereUniqueInput | ProfessionWhereUniqueInput[]
   }
 
+  export type UserUpdateOneWithoutQualificationStandardDeveloperNestedInput = {
+    create?: XOR<UserCreateWithoutQualificationStandardDeveloperInput, UserUncheckedCreateWithoutQualificationStandardDeveloperInput>
+    connectOrCreate?: UserCreateOrConnectWithoutQualificationStandardDeveloperInput
+    upsert?: UserUpsertWithoutQualificationStandardDeveloperInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutQualificationStandardDeveloperInput, UserUpdateWithoutQualificationStandardDeveloperInput>, UserUncheckedUpdateWithoutQualificationStandardDeveloperInput>
+  }
+
   export type ProfessionUpdateManyWithoutQualificationStandardDeveloperNestedInput = {
     create?: XOR<ProfessionCreateWithoutQualificationStandardDeveloperInput, ProfessionUncheckedCreateWithoutQualificationStandardDeveloperInput> | ProfessionCreateWithoutQualificationStandardDeveloperInput[] | ProfessionUncheckedCreateWithoutQualificationStandardDeveloperInput[]
     connectOrCreate?: ProfessionCreateOrConnectWithoutQualificationStandardDeveloperInput | ProfessionCreateOrConnectWithoutQualificationStandardDeveloperInput[]
@@ -17738,6 +17895,14 @@ export namespace Prisma {
     update?: ProfessionUpdateWithWhereUniqueWithoutQualificationStandardDeveloperInput | ProfessionUpdateWithWhereUniqueWithoutQualificationStandardDeveloperInput[]
     updateMany?: ProfessionUpdateManyWithWhereWithoutQualificationStandardDeveloperInput | ProfessionUpdateManyWithWhereWithoutQualificationStandardDeveloperInput[]
     deleteMany?: ProfessionScalarWhereInput | ProfessionScalarWhereInput[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ProfessionUncheckedUpdateManyWithoutQualificationStandardDeveloperNestedInput = {
@@ -18366,14 +18531,6 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProfessionalsInput, UserUpdateWithoutProfessionalsInput>, UserUncheckedUpdateWithoutProfessionalsInput>
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type ProfessionalQualificationCreateNestedOneWithoutAccreditationExpertsInput = {
     create?: XOR<ProfessionalQualificationCreateWithoutAccreditationExpertsInput, ProfessionalQualificationUncheckedCreateWithoutAccreditationExpertsInput>
     connectOrCreate?: ProfessionalQualificationCreateOrConnectWithoutAccreditationExpertsInput
@@ -18754,6 +18911,44 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -18786,17 +18981,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedEnumAccreditationStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.AccreditationStatus | EnumAccreditationStatusFieldRefInput<$PrismaModel>
     in?: $Enums.AccreditationStatus[] | ListEnumAccreditationStatusFieldRefInput<$PrismaModel>
@@ -18805,33 +18989,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumAccreditationStatusFilter<$PrismaModel>
     _max?: NestedEnumAccreditationStatusFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedStringNullableFilter<$PrismaModel = never> = {
@@ -18982,6 +19139,24 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type QualificationStandardDeveloperCreateWithoutUserInput = {
+    name: string
+    edrpou: string
+    professions?: ProfessionCreateNestedManyWithoutQualificationStandardDeveloperInput
+  }
+
+  export type QualificationStandardDeveloperUncheckedCreateWithoutUserInput = {
+    id?: number
+    name: string
+    edrpou: string
+    professions?: ProfessionUncheckedCreateNestedManyWithoutQualificationStandardDeveloperInput
+  }
+
+  export type QualificationStandardDeveloperCreateOrConnectWithoutUserInput = {
+    where: QualificationStandardDeveloperWhereUniqueInput
+    create: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+  }
+
   export type ApplicationUpsertWithWhereUniqueWithoutApplicantInput = {
     where: ApplicationWhereUniqueInput
     update: XOR<ApplicationUpdateWithoutApplicantInput, ApplicationUncheckedUpdateWithoutApplicantInput>
@@ -19068,6 +19243,64 @@ export namespace Prisma {
     userId?: IntNullableFilter<"AccreditationExpert"> | number | null
   }
 
+  export type QualificationStandardDeveloperUpsertWithoutUserInput = {
+    update: XOR<QualificationStandardDeveloperUpdateWithoutUserInput, QualificationStandardDeveloperUncheckedUpdateWithoutUserInput>
+    create: XOR<QualificationStandardDeveloperCreateWithoutUserInput, QualificationStandardDeveloperUncheckedCreateWithoutUserInput>
+    where?: QualificationStandardDeveloperWhereInput
+  }
+
+  export type QualificationStandardDeveloperUpdateToOneWithWhereWithoutUserInput = {
+    where?: QualificationStandardDeveloperWhereInput
+    data: XOR<QualificationStandardDeveloperUpdateWithoutUserInput, QualificationStandardDeveloperUncheckedUpdateWithoutUserInput>
+  }
+
+  export type QualificationStandardDeveloperUpdateWithoutUserInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    edrpou?: StringFieldUpdateOperationsInput | string
+    professions?: ProfessionUpdateManyWithoutQualificationStandardDeveloperNestedInput
+  }
+
+  export type QualificationStandardDeveloperUncheckedUpdateWithoutUserInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    edrpou?: StringFieldUpdateOperationsInput | string
+    professions?: ProfessionUncheckedUpdateManyWithoutQualificationStandardDeveloperNestedInput
+  }
+
+  export type UserCreateWithoutQualificationStandardDeveloperInput = {
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    canApplyForQualification?: boolean
+    canDevelopStandards?: boolean
+    canAccreditCenters?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    applications?: ApplicationCreateNestedManyWithoutApplicantInput
+    professionals?: ProfessionalCreateNestedManyWithoutUserInput
+    accreditationExperts?: AccreditationExpertCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutQualificationStandardDeveloperInput = {
+    id?: number
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    canApplyForQualification?: boolean
+    canDevelopStandards?: boolean
+    canAccreditCenters?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    applications?: ApplicationUncheckedCreateNestedManyWithoutApplicantInput
+    professionals?: ProfessionalUncheckedCreateNestedManyWithoutUserInput
+    accreditationExperts?: AccreditationExpertUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutQualificationStandardDeveloperInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutQualificationStandardDeveloperInput, UserUncheckedCreateWithoutQualificationStandardDeveloperInput>
+  }
+
   export type ProfessionCreateWithoutQualificationStandardDeveloperInput = {
     name: string
     code: string
@@ -19091,6 +19324,46 @@ export namespace Prisma {
   export type ProfessionCreateManyQualificationStandardDeveloperInputEnvelope = {
     data: ProfessionCreateManyQualificationStandardDeveloperInput | ProfessionCreateManyQualificationStandardDeveloperInput[]
     skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutQualificationStandardDeveloperInput = {
+    update: XOR<UserUpdateWithoutQualificationStandardDeveloperInput, UserUncheckedUpdateWithoutQualificationStandardDeveloperInput>
+    create: XOR<UserCreateWithoutQualificationStandardDeveloperInput, UserUncheckedCreateWithoutQualificationStandardDeveloperInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutQualificationStandardDeveloperInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutQualificationStandardDeveloperInput, UserUncheckedUpdateWithoutQualificationStandardDeveloperInput>
+  }
+
+  export type UserUpdateWithoutQualificationStandardDeveloperInput = {
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    canApplyForQualification?: BoolFieldUpdateOperationsInput | boolean
+    canDevelopStandards?: BoolFieldUpdateOperationsInput | boolean
+    canAccreditCenters?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    applications?: ApplicationUpdateManyWithoutApplicantNestedInput
+    professionals?: ProfessionalUpdateManyWithoutUserNestedInput
+    accreditationExperts?: AccreditationExpertUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutQualificationStandardDeveloperInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    canApplyForQualification?: BoolFieldUpdateOperationsInput | boolean
+    canDevelopStandards?: BoolFieldUpdateOperationsInput | boolean
+    canAccreditCenters?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    applications?: ApplicationUncheckedUpdateManyWithoutApplicantNestedInput
+    professionals?: ProfessionalUncheckedUpdateManyWithoutUserNestedInput
+    accreditationExperts?: AccreditationExpertUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProfessionUpsertWithWhereUniqueWithoutQualificationStandardDeveloperInput = {
@@ -19123,12 +19396,14 @@ export namespace Prisma {
   export type QualificationStandardDeveloperCreateWithoutProfessionsInput = {
     name: string
     edrpou: string
+    user?: UserCreateNestedOneWithoutQualificationStandardDeveloperInput
   }
 
   export type QualificationStandardDeveloperUncheckedCreateWithoutProfessionsInput = {
     id?: number
     name: string
     edrpou: string
+    userId?: number | null
   }
 
   export type QualificationStandardDeveloperCreateOrConnectWithoutProfessionsInput = {
@@ -19181,12 +19456,14 @@ export namespace Prisma {
   export type QualificationStandardDeveloperUpdateWithoutProfessionsInput = {
     name?: StringFieldUpdateOperationsInput | string
     edrpou?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneWithoutQualificationStandardDeveloperNestedInput
   }
 
   export type QualificationStandardDeveloperUncheckedUpdateWithoutProfessionsInput = {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     edrpou?: StringFieldUpdateOperationsInput | string
+    userId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type ProfessionalQualificationUpsertWithWhereUniqueWithoutProfessionInput = {
@@ -19974,6 +20251,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutApplicantInput
     accreditationExperts?: AccreditationExpertCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProfessionalsInput = {
@@ -19988,6 +20266,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutApplicantInput
     accreditationExperts?: AccreditationExpertUncheckedCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProfessionalsInput = {
@@ -20083,6 +20362,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutApplicantNestedInput
     accreditationExperts?: AccreditationExpertUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProfessionalsInput = {
@@ -20097,6 +20377,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutApplicantNestedInput
     accreditationExperts?: AccreditationExpertUncheckedUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProfessionalQualificationCreateWithoutAccreditationExpertsInput = {
@@ -20163,6 +20444,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     applications?: ApplicationCreateNestedManyWithoutApplicantInput
     professionals?: ProfessionalCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccreditationExpertsInput = {
@@ -20177,6 +20459,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     applications?: ApplicationUncheckedCreateNestedManyWithoutApplicantInput
     professionals?: ProfessionalUncheckedCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccreditationExpertsInput = {
@@ -20254,6 +20537,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUpdateManyWithoutApplicantNestedInput
     professionals?: ProfessionalUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccreditationExpertsInput = {
@@ -20268,6 +20552,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     applications?: ApplicationUncheckedUpdateManyWithoutApplicantNestedInput
     professionals?: ProfessionalUncheckedUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProfessionalQualificationCreateWithoutQualificationCenterExpertisesInput = {
@@ -20443,6 +20728,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     professionals?: ProfessionalCreateNestedManyWithoutUserInput
     accreditationExperts?: AccreditationExpertCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutApplicationsInput = {
@@ -20457,6 +20743,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     professionals?: ProfessionalUncheckedCreateNestedManyWithoutUserInput
     accreditationExperts?: AccreditationExpertUncheckedCreateNestedManyWithoutUserInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutApplicationsInput = {
@@ -20593,6 +20880,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     professionals?: ProfessionalUpdateManyWithoutUserNestedInput
     accreditationExperts?: AccreditationExpertUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutApplicationsInput = {
@@ -20607,6 +20895,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     professionals?: ProfessionalUncheckedUpdateManyWithoutUserNestedInput
     accreditationExperts?: AccreditationExpertUncheckedUpdateManyWithoutUserNestedInput
+    qualificationStandardDeveloper?: QualificationStandardDeveloperUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProfessionalQualificationUpsertWithoutApplicationsInput = {

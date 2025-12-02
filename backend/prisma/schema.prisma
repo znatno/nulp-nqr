@@ -31,6 +31,7 @@ model User {
   applications  Application[]
   professionals Professional[]
   accreditationExperts AccreditationExpert[]
+  qualificationStandardDeveloper QualificationStandardDeveloper?
 }
 
 // -------------------- Core NQR tables --------------------
@@ -41,6 +42,8 @@ model QualificationStandardDeveloper {
   id          Int          @id @default(autoincrement())
   name        String
   edrpou      String
+  userId      Int?         @unique // Link to User (developer) - one-to-one relation
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   professions Profession[]
 }
 

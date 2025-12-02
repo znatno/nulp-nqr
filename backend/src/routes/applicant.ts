@@ -111,6 +111,82 @@ router.get('/centres/:id/qualifications', async (req: Request, res: Response): P
 });
 
 /**
+ * GET /api/applicant/applications/:id
+ * Get a single application by ID (must belong to current user)
+ */
+router.get('/applications/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({ error: 'Authentication required' });
+            return;
+        }
+
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            res.status(400).json({ error: 'Invalid ID' });
+            return;
+        }
+
+        const application = await prisma.application.findFirst({
+            where: {
+                id,
+                applicantId: req.user.id, // Ensure user owns this application
+            },
+            include: {
+                preferredQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                        address: true,
+                    },
+                },
+                assignedQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                        address: true,
+                    },
+                },
+                professionalQualification: {
+                    include: {
+                        profession: {
+                            select: {
+                                id: true,
+                                name: true,
+                                code: true,
+                            },
+                        },
+                    },
+                },
+                testSessions: {
+                    include: {
+                        qualificationCenter: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                    orderBy: { scheduledAt: 'desc' },
+                },
+            },
+        });
+
+        if (!application) {
+            res.status(404).json({ error: 'Application not found' });
+            return;
+        }
+
+        res.json(application);
+    } catch (err) {
+        console.error('Failed to get application', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+/**
  * GET /api/applicant/applications
  * Get current user's applications
  * Query params: page, pageSize, status (optional filter)

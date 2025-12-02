@@ -19,6 +19,7 @@ import professionalQualificationsRoutes from './routes/professionalQualification
 import professionalsRoutes from './routes/persons.js';
 import accreditationsRoutes from './routes/accreditations.js';
 import examinationsRoutes from './routes/examinations.js';
+import expertsRoutes from './routes/experts.js';
 import applicantRoutes from './routes/applicant.js';
 import verificationRoutes from './routes/verification.js';
 import dashboardRoutes from './routes/dashboard.js';
@@ -26,6 +27,8 @@ import reportsRoutes from './routes/reports.js';
 import applicationsRoutes from './routes/applications.js';
 import testSessionsRoutes from './routes/testSessions.js';
 import usersRoutes from './routes/users.js';
+import expertRoutes from './routes/expert.js';
+import developerRoutes from './routes/developer.js';
 import { authenticate, requireRole, requireManager } from './middleware/auth.js';
 
 // ESM-compatible __dirname equivalent
@@ -69,10 +72,19 @@ app.use('/api/professional-qualifications', professionalQualificationsRoutes);
 app.use('/api/persons', professionalsRoutes);
 app.use('/api/accreditations', accreditationsRoutes);
 app.use('/api/examinations', examinationsRoutes);
+app.use('/api/experts', expertsRoutes);
 
 // ─────────────────────────────────────────────────────
 // Applicant routes (protected, requires applicant capability: canApplyForQualification = true)
 app.use('/api/applicant', applicantRoutes);
+
+// ─────────────────────────────────────────────────────
+// Expert routes (protected, requires expert capability: canAccreditCenters = true)
+app.use('/api/expert', expertRoutes);
+
+// ─────────────────────────────────────────────────────
+// Developer routes (protected, requires developer capability: canDevelopStandards = true)
+app.use('/api/developer', developerRoutes);
 
 // ─────────────────────────────────────────────────────
 // Verification routes (public, no auth required)
