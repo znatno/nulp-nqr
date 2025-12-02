@@ -325,7 +325,7 @@ function getRoleLabel(role: string | null | undefined): string {
             </template>
         </nav>
 
-        <!-- User info and logout -->
+        <!-- User info and logout (authenticated) -->
         <div v-if="isAuthenticated" class="mt-auto p-4 border-t border-slate-700 bg-slate-800/50">
             <div class="mb-3 text-sm">
                 <div class="text-slate-200 font-medium">{{ userEmail }}</div>
@@ -337,6 +337,26 @@ function getRoleLabel(role: string | null | undefined): string {
             >
                 Вийти
             </button>
+        </div>
+
+        <!-- Login button (unauthenticated) -->
+        <div v-else class="mt-auto p-4 border-t border-slate-700">
+            <RouterLink
+                to="/login"
+                class="flex items-center justify-center gap-2 w-full rounded-md bg-blue-600 px-3 py-2.5 text-sm hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                :class="{ 'bg-blue-700': $route.path === '/login' }"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Увійти
+            </RouterLink>
+            <p class="text-xs text-slate-400 text-center mt-2">
+                Немає облікового запису?
+                <RouterLink to="/register" class="text-blue-400 hover:text-blue-300 underline">
+                    Зареєструватися
+                </RouterLink>
+            </p>
         </div>
     </aside>
 </template>

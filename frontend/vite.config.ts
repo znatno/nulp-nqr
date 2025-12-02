@@ -9,5 +9,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
-  server: { proxy: { '/api': 'http://localhost:4000' } }
+  server: { proxy: { '/api': 'http://localhost:4000' }, allowedHosts: ['localhost', '127.0.0.1', 'stubbly-radiative-christinia.ngrok-free.dev'], }
 });

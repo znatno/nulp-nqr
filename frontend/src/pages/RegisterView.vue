@@ -3,10 +3,10 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 import { api } from '@/services/api';
-import type { Role } from '@/types/auth';
+import type { User } from '@/types/auth';
 
 const router = useRouter();
-const { setFromTokenPayload } = useAuth();
+const { setFromTokenPayload, user } = useAuth();
 
 const email = ref('');
 const password = ref('');
@@ -14,17 +14,29 @@ const confirmPassword = ref('');
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-function getRoleHome(role: Role): string {
-    switch (role) {
-        case 'MANAGER':
-            return '/manager';
-        case 'APPLICANT':
-            return '/applicant';
-        case 'VIEWER':
-            return '/';
-        default:
-            return '/';
+function getRoleHome(user: User | null): string {
+    if (!user) {
+        return '/';
     }
+    
+    if (user.role === 'MANAGER') {
+        return '/manager';
+    }
+    
+    if (user.role === 'USER' && user.canApplyForQualification) {
+        return '/applicant';
+    }
+    
+    if (user.role === 'USER' && user.canDevelopStandards) {
+        return '/developer';
+    }
+    
+    if (user.role === 'USER' && user.canAccreditCenters) {
+        return '/expert';
+    }
+    
+    // VIEWER or USER without capabilities -> home page
+    return '/';
 }
 
 async function handleSubmit() {
@@ -48,7 +60,7 @@ async function handleSubmit() {
 
     try {
         // Register
-        const response = await api.post<{ token: string; user: { id: number; email: string; role: Role } }>(
+        const response = await api.post<{ token: string; user: User }>(
             '/auth/register',
             {
                 email: email.value.trim(),
@@ -58,7 +70,8 @@ async function handleSubmit() {
 
         // Auto-login after registration
         setFromTokenPayload(response.data.token, response.data.user);
-        const homeRoute = getRoleHome(response.data.user.role);
+        // User is now set after registration, get the home route based on user capabilities
+        const homeRoute = getRoleHome(user.value);
         router.push(homeRoute);
     } catch (err: any) {
         console.error('Registration error:', err);

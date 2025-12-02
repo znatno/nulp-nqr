@@ -2,27 +2,39 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
-import type { Role } from '@/types/auth';
+import type { User } from '@/types/auth';
 
 const router = useRouter();
-const { login } = useAuth();
+const { login, user } = useAuth();
 
 const email = ref('');
 const password = ref('');
 const error = ref<string | null>(null);
 const loading = ref(false);
 
-function getRoleHome(role: Role): string {
-    switch (role) {
-        case 'MANAGER':
-            return '/manager';
-        case 'APPLICANT':
-            return '/applicant';
-        case 'VIEWER':
-            return '/';
-        default:
-            return '/';
+function getRoleHome(user: User | null): string {
+    if (!user) {
+        return '/';
     }
+    
+    if (user.role === 'MANAGER') {
+        return '/manager';
+    }
+    
+    if (user.role === 'USER' && user.canApplyForQualification) {
+        return '/applicant';
+    }
+    
+    if (user.role === 'USER' && user.canDevelopStandards) {
+        return '/developer';
+    }
+    
+    if (user.role === 'USER' && user.canAccreditCenters) {
+        return '/expert';
+    }
+    
+    // VIEWER or USER without capabilities -> home page
+    return '/';
 }
 
 async function handleSubmit() {
@@ -36,8 +48,8 @@ async function handleSubmit() {
 
     try {
         await login(email.value, password.value);
-        const { userRole } = useAuth();
-        const homeRoute = userRole.value ? getRoleHome(userRole.value) : '/';
+        // User is now set after login, get the home route based on user capabilities
+        const homeRoute = getRoleHome(user.value);
         router.push(homeRoute);
     } catch (err: any) {
         console.error('Login error:', err);
