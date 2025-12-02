@@ -9,6 +9,15 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+// Transform examination data to match frontend expectations
+function transformExamination(examination: any) {
+    return {
+        ...examination,
+        expert: examination.accreditationExpert,
+        examinationDate: examination.expertiseDate,
+    };
+}
+
 /**
  * GET /api/examinations
  * Get paginated list of examinations with optional search
@@ -48,8 +57,11 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
             }),
         ]);
 
+        // Transform items to match frontend expectations
+        const transformedItems = items.map(transformExamination);
+
         res.json({
-            items,
+            items: transformedItems,
             total,
             page,
             pageSize,
@@ -86,7 +98,7 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        res.json(examination);
+        res.json(transformExamination(examination));
     } catch (err) {
         console.error('Failed to get examination', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -99,12 +111,25 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
  * Requires MANAGER role
  */
 router.post('/', requireManager(), async (req: Request, res: Response): Promise<void> => {
-    const { professionalQualificationId, qualificationCenterId, accreditationExpertId, expertiseDate } = req.body as {
+    const { 
+        professionalQualificationId, 
+        qualificationCenterId, 
+        accreditationExpertId, 
+        expertId, // Frontend field name
+        expertiseDate,
+        examinationDate, // Frontend field name
+    } = req.body as {
         professionalQualificationId?: unknown;
         qualificationCenterId?: unknown;
         accreditationExpertId?: unknown;
+        expertId?: unknown;
         expertiseDate?: unknown;
+        examinationDate?: unknown;
     };
+
+    // Use frontend field names if provided, fallback to backend field names
+    const finalAccreditationExpertId = expertId ?? accreditationExpertId;
+    const finalExpertiseDate = examinationDate ?? expertiseDate;
 
     // Validation
     if (typeof professionalQualificationId !== 'number' || !Number.isInteger(professionalQualificationId)) {
@@ -115,8 +140,8 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
         res.status(400).json({ error: 'qualificationCenterId must be an integer' });
         return;
     }
-    if (typeof accreditationExpertId !== 'number' || !Number.isInteger(accreditationExpertId)) {
-        res.status(400).json({ error: 'accreditationExpertId must be an integer' });
+    if (typeof finalAccreditationExpertId !== 'number' || !Number.isInteger(finalAccreditationExpertId)) {
+        res.status(400).json({ error: 'accreditationExpertId/expertId must be an integer' });
         return;
     }
 
@@ -125,8 +150,8 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             data: {
                 professionalQualificationId,
                 qualificationCenterId,
-                accreditationExpertId,
-                expertiseDate: expertiseDate ? new Date(expertiseDate as string) : new Date(),
+                accreditationExpertId: finalAccreditationExpertId,
+                expertiseDate: finalExpertiseDate ? new Date(finalExpertiseDate as string) : new Date(),
             },
             include: {
                 professionalQualification: true,
@@ -134,7 +159,7 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
                 accreditationExpert: true,
             },
         });
-        res.status(201).json(examination);
+        res.status(201).json(transformExamination(examination));
     } catch (err) {
         console.error('Failed to create examination', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -153,12 +178,25 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
         return;
     }
 
-    const { professionalQualificationId, qualificationCenterId, accreditationExpertId, expertiseDate } = req.body as {
+    const { 
+        professionalQualificationId, 
+        qualificationCenterId, 
+        accreditationExpertId,
+        expertId, // Frontend field name
+        expertiseDate,
+        examinationDate, // Frontend field name
+    } = req.body as {
         professionalQualificationId?: unknown;
         qualificationCenterId?: unknown;
         accreditationExpertId?: unknown;
+        expertId?: unknown;
         expertiseDate?: unknown;
+        examinationDate?: unknown;
     };
+
+    // Use frontend field names if provided, fallback to backend field names
+    const finalAccreditationExpertId = expertId ?? accreditationExpertId;
+    const finalExpertiseDate = examinationDate ?? expertiseDate;
 
     // Validation
     if (professionalQualificationId !== undefined && (typeof professionalQualificationId !== 'number' || !Number.isInteger(professionalQualificationId))) {
@@ -169,8 +207,8 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
         res.status(400).json({ error: 'qualificationCenterId must be an integer' });
         return;
     }
-    if (accreditationExpertId !== undefined && (typeof accreditationExpertId !== 'number' || !Number.isInteger(accreditationExpertId))) {
-        res.status(400).json({ error: 'accreditationExpertId must be an integer' });
+    if (finalAccreditationExpertId !== undefined && (typeof finalAccreditationExpertId !== 'number' || !Number.isInteger(finalAccreditationExpertId))) {
+        res.status(400).json({ error: 'accreditationExpertId/expertId must be an integer' });
         return;
     }
 
@@ -187,8 +225,8 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
             data: {
                 ...(professionalQualificationId !== undefined ? { professionalQualificationId } : {}),
                 ...(qualificationCenterId !== undefined ? { qualificationCenterId } : {}),
-                ...(accreditationExpertId !== undefined ? { accreditationExpertId } : {}),
-                ...(expertiseDate !== undefined ? { expertiseDate: new Date(expertiseDate as string) } : {}),
+                ...(finalAccreditationExpertId !== undefined ? { accreditationExpertId: finalAccreditationExpertId } : {}),
+                ...(finalExpertiseDate !== undefined ? { expertiseDate: new Date(finalExpertiseDate as string) } : {}),
             },
             include: {
                 professionalQualification: true,
@@ -196,7 +234,7 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
                 accreditationExpert: true,
             },
         });
-        res.json(examination);
+        res.json(transformExamination(examination));
     } catch (err) {
         console.error('Failed to update examination', err);
         res.status(500).json({ error: 'Internal server error' });

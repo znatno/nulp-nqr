@@ -104,7 +104,7 @@ app.use('/api/applications', applicationsRoutes);
 
 // ─────────────────────────────────────────────────────
 // Test sessions routes (protected, requires MANAGER role)
-app.use('/api', testSessionsRoutes);
+app.use('/api/test-sessions', testSessionsRoutes);
 
 // ─────────────────────────────────────────────────────
 // User management routes (protected, requires MANAGER role)

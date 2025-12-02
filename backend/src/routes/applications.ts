@@ -308,4 +308,123 @@ router.put('/:id/assign-center', requireManager(), async (req: Request, res: Res
     }
 });
 
+/**
+ * POST /api/applications/:id/test-sessions
+ * Create TestSession for the application
+ * Requires MANAGER role
+ */
+router.post('/:id/test-sessions', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    try {
+        const applicationId = Number(req.params.id);
+        if (!Number.isInteger(applicationId)) {
+            res.status(400).json({ error: 'Invalid application ID' });
+            return;
+        }
+
+        const { qualificationCenterId, scheduledAt, notes } = req.body as {
+            qualificationCenterId?: unknown;
+            scheduledAt?: unknown;
+            notes?: unknown;
+        };
+
+        // Validation
+        if (typeof qualificationCenterId !== 'number' || !Number.isInteger(qualificationCenterId)) {
+            res.status(400).json({ error: 'qualificationCenterId must be an integer' });
+            return;
+        }
+
+        if (!scheduledAt || typeof scheduledAt !== 'string') {
+            res.status(400).json({ error: 'scheduledAt is required and must be an ISO date string' });
+            return;
+        }
+
+        const scheduledAtDate = new Date(scheduledAt);
+        if (isNaN(scheduledAtDate.getTime())) {
+            res.status(400).json({ error: 'Invalid scheduledAt format' });
+            return;
+        }
+
+        // Check if application exists and has assigned center
+        const application = await prisma.application.findUnique({
+            where: { id: applicationId },
+            include: {
+                professionalQualification: true,
+                assignedQualificationCenter: true,
+            },
+        });
+
+        if (!application) {
+            res.status(404).json({ error: 'Application not found' });
+            return;
+        }
+
+        if (!application.qualificationCenterId) {
+            res.status(400).json({ error: 'Application must have an assigned center before creating test session' });
+            return;
+        }
+
+        if (application.qualificationCenterId !== qualificationCenterId) {
+            res.status(400).json({ error: 'Test session center must match assigned center' });
+            return;
+        }
+
+        // Verify center exists
+        const center = await prisma.qualificationCenter.findUnique({
+            where: { id: qualificationCenterId },
+        });
+
+        if (!center) {
+            res.status(404).json({ error: 'Qualification center not found' });
+            return;
+        }
+
+        // Create test session
+        const testSession = await prisma.testSession.create({
+            data: {
+                applicationId,
+                qualificationCenterId,
+                scheduledAt: scheduledAtDate,
+                result: 'PENDING',
+                notes: typeof notes === 'string' ? notes.trim() || null : null,
+            },
+            include: {
+                application: {
+                    include: {
+                        applicant: {
+                            select: {
+                                id: true,
+                                email: true,
+                            },
+                        },
+                        professionalQualification: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+                qualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                    },
+                },
+            },
+        });
+
+        // Update application status
+        await prisma.application.update({
+            where: { id: applicationId },
+            data: { status: 'SCHEDULED' },
+        });
+
+        res.status(201).json(testSession);
+    } catch (err) {
+        console.error('Failed to create test session', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 export default router;
