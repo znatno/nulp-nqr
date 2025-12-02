@@ -7,6 +7,7 @@ interface Application {
     id: number;
     status: string;
     comment: string | null;
+    fullName: string;
     createdAt: string;
     preferredQualificationCenter?: {
         id: number;

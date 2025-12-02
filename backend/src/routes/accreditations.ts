@@ -46,8 +46,15 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
             }),
         ]);
 
+        // Transform items to match frontend expectations
+        const transformedItems = items.map((item) => ({
+            ...item,
+            certificateNumber: item.accreditationDocumentId,
+            sessionNQADate: item.naqCommissionDate,
+        }));
+
         res.json({
-            items,
+            items: transformedItems,
             total,
             page,
             pageSize,
@@ -83,7 +90,12 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        res.json(accreditation);
+        // Transform to match frontend expectations
+        res.json({
+            ...accreditation,
+            certificateNumber: accreditation.accreditationDocumentId,
+            sessionNQADate: accreditation.naqCommissionDate,
+        });
     } catch (err) {
         console.error('Failed to get accreditation', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -96,12 +108,25 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
  * Requires MANAGER role
  */
 router.post('/', requireManager(), async (req: Request, res: Response): Promise<void> => {
-    const { professionalQualificationId, qualificationCenterId, accreditationDocumentId, naqCommissionDate } = req.body as {
+    const { 
+        professionalQualificationId, 
+        qualificationCenterId, 
+        accreditationDocumentId,
+        certificateNumber, // Frontend field name
+        naqCommissionDate,
+        sessionNQADate, // Frontend field name
+    } = req.body as {
         professionalQualificationId?: unknown;
         qualificationCenterId?: unknown;
         accreditationDocumentId?: unknown;
+        certificateNumber?: unknown;
         naqCommissionDate?: unknown;
+        sessionNQADate?: unknown;
     };
+
+    // Use frontend field names if provided, fallback to backend field names
+    const finalAccreditationDocumentId = certificateNumber ?? accreditationDocumentId;
+    const finalNaqCommissionDate = sessionNQADate ?? naqCommissionDate;
 
     // Validation
     if (typeof professionalQualificationId !== 'number' || !Number.isInteger(professionalQualificationId)) {
@@ -112,28 +137,66 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
         res.status(400).json({ error: 'qualificationCenterId must be an integer' });
         return;
     }
-    if (typeof accreditationDocumentId !== 'string' || !accreditationDocumentId.trim()) {
-        res.status(400).json({ error: 'accreditationDocumentId is required' });
+    if (typeof finalAccreditationDocumentId !== 'string' || !finalAccreditationDocumentId.trim()) {
+        res.status(400).json({ error: 'certificateNumber/accreditationDocumentId is required' });
         return;
     }
 
     try {
+        // Verify related entities exist
+        const [qualification, center] = await Promise.all([
+            prisma.professionalQualification.findUnique({ where: { id: professionalQualificationId } }),
+            prisma.qualificationCenter.findUnique({ where: { id: qualificationCenterId } }),
+        ]);
+
+        if (!qualification) {
+            res.status(404).json({ error: 'Професійну кваліфікацію не знайдено' });
+            return;
+        }
+        if (!center) {
+            res.status(404).json({ error: 'Кваліфікаційний центр не знайдено' });
+            return;
+        }
+
         const accreditation = await prisma.qualificationCenterAccreditation.create({
             data: {
                 professionalQualificationId,
                 qualificationCenterId,
-                accreditationDocumentId: accreditationDocumentId.trim(),
-                naqCommissionDate: naqCommissionDate ? new Date(naqCommissionDate as string) : new Date(),
+                accreditationDocumentId: (finalAccreditationDocumentId as string).trim(),
+                naqCommissionDate: finalNaqCommissionDate ? new Date(finalNaqCommissionDate as string) : new Date(),
             },
             include: {
                 professionalQualification: true,
                 qualificationCenter: true,
             },
         });
-        res.status(201).json(accreditation);
-    } catch (err) {
+        // Transform response to match frontend expectations
+        res.status(201).json({
+            ...accreditation,
+            certificateNumber: accreditation.accreditationDocumentId,
+            sessionNQADate: accreditation.naqCommissionDate,
+        });
+    } catch (err: any) {
         console.error('Failed to create accreditation', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            res.status(400).json({ error: 'Акредитація з такими даними вже існує (перевірте унікальність комбінації кваліфікації, центру та номера документа)' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            const field = err.meta?.field_name;
+            if (field?.includes('professionalQualificationId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор професійної кваліфікації' });
+                return;
+            }
+            if (field?.includes('qualificationCenterId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор кваліфікаційного центру' });
+                return;
+            }
+            res.status(400).json({ error: 'Невірні дані для створення акредитації' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -149,12 +212,25 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
         return;
     }
 
-    const { professionalQualificationId, qualificationCenterId, accreditationDocumentId, naqCommissionDate } = req.body as {
+    const { 
+        professionalQualificationId, 
+        qualificationCenterId, 
+        accreditationDocumentId,
+        certificateNumber, // Frontend field name
+        naqCommissionDate,
+        sessionNQADate, // Frontend field name
+    } = req.body as {
         professionalQualificationId?: unknown;
         qualificationCenterId?: unknown;
         accreditationDocumentId?: unknown;
+        certificateNumber?: unknown;
         naqCommissionDate?: unknown;
+        sessionNQADate?: unknown;
     };
+
+    // Use frontend field names if provided, fallback to backend field names
+    const finalAccreditationDocumentId = certificateNumber ?? accreditationDocumentId;
+    const finalNaqCommissionDate = sessionNQADate ?? naqCommissionDate;
 
     // Validation
     if (professionalQualificationId !== undefined && (typeof professionalQualificationId !== 'number' || !Number.isInteger(professionalQualificationId))) {
@@ -165,8 +241,8 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
         res.status(400).json({ error: 'qualificationCenterId must be an integer' });
         return;
     }
-    if (accreditationDocumentId !== undefined && (typeof accreditationDocumentId !== 'string' || !accreditationDocumentId.trim())) {
-        res.status(400).json({ error: 'accreditationDocumentId must be a non-empty string' });
+    if (finalAccreditationDocumentId !== undefined && (typeof finalAccreditationDocumentId !== 'string' || !finalAccreditationDocumentId.trim())) {
+        res.status(400).json({ error: 'certificateNumber/accreditationDocumentId must be a non-empty string' });
         return;
     }
 
@@ -183,15 +259,20 @@ router.put('/:id', requireManager(), async (req: Request, res: Response): Promis
             data: {
                 ...(professionalQualificationId !== undefined ? { professionalQualificationId } : {}),
                 ...(qualificationCenterId !== undefined ? { qualificationCenterId } : {}),
-                ...(accreditationDocumentId !== undefined ? { accreditationDocumentId: accreditationDocumentId.trim() } : {}),
-                ...(naqCommissionDate !== undefined ? { naqCommissionDate: new Date(naqCommissionDate as string) } : {}),
+                ...(finalAccreditationDocumentId !== undefined ? { accreditationDocumentId: (finalAccreditationDocumentId as string).trim() } : {}),
+                ...(finalNaqCommissionDate !== undefined ? { naqCommissionDate: new Date(finalNaqCommissionDate as string) } : {}),
             },
             include: {
                 professionalQualification: true,
                 qualificationCenter: true,
             },
         });
-        res.json(accreditation);
+        // Transform response to match frontend expectations
+        res.json({
+            ...accreditation,
+            certificateNumber: accreditation.accreditationDocumentId,
+            sessionNQADate: accreditation.naqCommissionDate,
+        });
     } catch (err) {
         console.error('Failed to update accreditation', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -214,15 +295,22 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
         // Check if accreditation exists
         const existing = await prisma.qualificationCenterAccreditation.findUnique({ where: { id } });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Акредитацію не знайдено' });
             return;
         }
 
         await prisma.qualificationCenterAccreditation.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete accreditation', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити акредитацію, оскільки вона використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

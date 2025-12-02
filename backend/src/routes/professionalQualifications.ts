@@ -111,6 +111,21 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
     }
 
     try {
+        // Validate NQR level range
+        if (nqrLevel < 0 || nqrLevel > 10) {
+            res.status(400).json({ error: 'Рівень НКР повинен бути від 0 до 10' });
+            return;
+        }
+
+        // Verify profession exists
+        const profession = await prisma.profession.findUnique({
+            where: { id: professionId },
+        });
+        if (!profession) {
+            res.status(404).json({ error: 'Професію не знайдено' });
+            return;
+        }
+
         const qualification = await prisma.professionalQualification.create({
             data: {
                 name: name.trim(),
@@ -120,9 +135,18 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             include: { profession: true },
         });
         res.status(201).json(qualification);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create professional qualification', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            res.status(400).json({ error: 'Професійна кваліфікація з такими даними вже існує' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            res.status(400).json({ error: 'Невірний ідентифікатор професії' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -195,18 +219,59 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
     }
 
     try {
-        // Check if qualification exists
-        const existing = await prisma.professionalQualification.findUnique({ where: { id } });
+        // Check if qualification exists and has related records
+        const existing = await prisma.professionalQualification.findUnique({ 
+            where: { id },
+            include: {
+                qualificationCenterAccreditations: { take: 1 },
+                professionals: { take: 1 },
+                accreditationExperts: { take: 1 },
+                qualificationCenterExpertises: { take: 1 },
+                applications: { take: 1 },
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Професійну кваліфікацію не знайдено' });
+            return;
+        }
+
+        // Check for related records
+        const relatedRecords: string[] = [];
+        if (existing.qualificationCenterAccreditations.length > 0) {
+            relatedRecords.push('акредитації');
+        }
+        if (existing.professionals.length > 0) {
+            relatedRecords.push('професіонали (сертифікати)');
+        }
+        if (existing.accreditationExperts.length > 0) {
+            relatedRecords.push('експерти');
+        }
+        if (existing.qualificationCenterExpertises.length > 0) {
+            relatedRecords.push('експертизи');
+        }
+        if (existing.applications.length > 0) {
+            relatedRecords.push('заявки');
+        }
+
+        if (relatedRecords.length > 0) {
+            res.status(400).json({ 
+                error: `Неможливо видалити професійну кваліфікацію, оскільки до неї прив'язані: ${relatedRecords.join(', ')}. Спочатку видаліть всі пов'язані записи.` 
+            });
             return;
         }
 
         await prisma.professionalQualification.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete professional qualification', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити професійну кваліфікацію, оскільки вона використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

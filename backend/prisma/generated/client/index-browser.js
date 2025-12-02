@@ -202,6 +202,7 @@ exports.Prisma.QualificationCenterExpertiseScalarFieldEnum = {
 exports.Prisma.ApplicationScalarFieldEnum = {
   id: 'id',
   applicantId: 'applicantId',
+  fullName: 'fullName',
   professionalQualificationId: 'professionalQualificationId',
   preferredQualificationCenterId: 'preferredQualificationCenterId',
   qualificationCenterId: 'qualificationCenterId',

@@ -496,6 +496,7 @@ async function main() {
     const app1 = await prisma.application.create({
         data: {
             applicantId: applicantUser.id,
+            fullName: 'Тестовий Заявник',
             professionalQualificationId: pq1.id,
             preferredQualificationCenterId: qc1.id,
             qualificationCenterId: qc1.id,
@@ -508,6 +509,7 @@ async function main() {
     const app2 = await prisma.application.create({
         data: {
             applicantId: applicantUser.id,
+            fullName: 'Тестовий Заявник',
             professionalQualificationId: pq2.id,
             preferredQualificationCenterId: qc2.id,
             qualificationCenterId: qc2.id,
@@ -520,6 +522,7 @@ async function main() {
     const app3 = await prisma.application.create({
         data: {
             applicantId: applicantUser.id,
+            fullName: 'Тестовий Заявник',
             professionalQualificationId: pq3.id,
             preferredQualificationCenterId: qc3.id,
             status: 'UNDER_REVIEW',
@@ -531,6 +534,7 @@ async function main() {
     const app4 = await prisma.application.create({
         data: {
             applicantId: applicantUser.id,
+            fullName: 'Тестовий Заявник',
             professionalQualificationId: pq4.id,
             preferredQualificationCenterId: qc4.id,
             status: 'SUBMITTED',
@@ -542,6 +546,7 @@ async function main() {
     const app5 = await prisma.application.create({
         data: {
             applicantId: applicantUser.id,
+            fullName: 'Тестовий Заявник',
             professionalQualificationId: pq5.id,
             preferredQualificationCenterId: qc5.id,
             qualificationCenterId: qc5.id,

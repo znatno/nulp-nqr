@@ -34,7 +34,7 @@ function getRoleLabel(role: string | null | undefined): string {
     <aside class="w-64 bg-slate-900 text-white flex flex-col">
         <!-- Header -->
         <div class="p-5 border-b border-slate-700">
-            <h2 class="text-xl font-bold">NQF Register</h2>
+            <h2 class="text-xl font-bold">NQR IS</h2>
             <p class="text-xs text-slate-400 mt-1">Національний реєстр кваліфікацій</p>
         </div>
         

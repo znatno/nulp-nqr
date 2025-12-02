@@ -285,9 +285,10 @@ router.post('/applications', async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        const { centreId, qualificationId, comment } = req.body as {
+        const { centreId, qualificationId, fullName, comment } = req.body as {
             centreId?: unknown;
             qualificationId?: unknown;
+            fullName?: unknown;
             comment?: unknown;
         };
 
@@ -299,6 +300,11 @@ router.post('/applications', async (req: Request, res: Response): Promise<void> 
 
         if (typeof qualificationId !== 'number' || !Number.isInteger(qualificationId)) {
             res.status(400).json({ error: 'qualificationId must be an integer' });
+            return;
+        }
+
+        if (typeof fullName !== 'string' || !fullName.trim()) {
+            res.status(400).json({ error: 'fullName is required' });
             return;
         }
 
@@ -344,6 +350,7 @@ router.post('/applications', async (req: Request, res: Response): Promise<void> 
         const application = await prisma.application.create({
             data: {
                 applicantId: req.user.id,
+                fullName: fullName.trim(),
                 preferredQualificationCenterId: centreId,
                 professionalQualificationId: qualificationId,
                 status: 'SUBMITTED',

@@ -27,6 +27,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
             ? {
                   OR: [
                       { fullName: { contains: search, mode: 'insensitive' as const } },
+                      { certificateNumber: { contains: search, mode: 'insensitive' as const } },
                   ],
               }
             : {};
@@ -73,8 +74,14 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
             }),
         ]);
 
+        // Transform items to match frontend expectations
+        const transformedItems = items.map((item) => ({
+            ...item,
+            dateReceived: item.certificateReceivedAt,
+        }));
+
         res.json({
-            items,
+            items: transformedItems,
             total,
             page,
             pageSize,
@@ -138,7 +145,11 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        res.json(person);
+        // Transform to match frontend expectations
+        res.json({
+            ...person,
+            dateReceived: person.certificateReceivedAt,
+        });
     } catch (err) {
         console.error('Failed to get person', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -178,6 +189,21 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
     }
 
     try {
+        // Verify related entities exist
+        const [center, qualification] = await Promise.all([
+            prisma.qualificationCenter.findUnique({ where: { id: qualificationCenterId } }),
+            prisma.professionalQualification.findUnique({ where: { id: professionalQualificationId } }),
+        ]);
+
+        if (!center) {
+            res.status(404).json({ error: 'Кваліфікаційний центр не знайдено' });
+            return;
+        }
+        if (!qualification) {
+            res.status(404).json({ error: 'Професійну кваліфікацію не знайдено' });
+            return;
+        }
+
         const person = await prisma.professional.create({
             data: {
                 fullName: fullName.trim(),
@@ -220,9 +246,32 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             },
         });
         res.status(201).json(person);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create person', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            const field = err.meta?.target?.[0];
+            if (field === 'certificateNumber') {
+                res.status(400).json({ error: 'Сертифікат з таким номером вже існує' });
+                return;
+            }
+            res.status(400).json({ error: 'Професіонал з такими даними вже існує' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            const field = err.meta?.field_name;
+            if (field?.includes('qualificationCenterId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор кваліфікаційного центру' });
+                return;
+            }
+            if (field?.includes('professionalQualificationId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор професійної кваліфікації' });
+                return;
+            }
+            res.status(400).json({ error: 'Невірні дані для створення особи' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -337,15 +386,22 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
         // Check if person exists
         const existing = await prisma.professional.findUnique({ where: { id } });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Особу не знайдено' });
             return;
         }
 
         await prisma.professional.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete person', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити особу, оскільки вона використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

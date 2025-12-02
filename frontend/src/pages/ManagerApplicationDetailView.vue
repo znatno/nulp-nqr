@@ -7,6 +7,7 @@ interface Application {
     id: number;
     status: string;
     comment: string | null;
+    fullName: string;
     createdAt: string;
     applicant: {
         id: number;
@@ -65,6 +66,10 @@ interface Application {
 const application = ref<Application | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const updatingStatus = ref(false);
+const showStatusModal = ref(false);
+const newStatus = ref<string>('');
+const issuingCertificate = ref(false);
 const route = useRoute();
 const router = useRouter();
 
@@ -147,6 +152,68 @@ async function loadApplication() {
     }
 }
 
+function openStatusModal() {
+    if (application.value) {
+        newStatus.value = application.value.status;
+        showStatusModal.value = true;
+    }
+}
+
+function closeStatusModal() {
+    showStatusModal.value = false;
+    newStatus.value = '';
+}
+
+async function updateStatus() {
+    if (!application.value) return;
+    
+    updatingStatus.value = true;
+    error.value = null;
+    try {
+        const response = await api.put<Application>(`/applications/${application.value.id}`, {
+            status: newStatus.value,
+        });
+        application.value = response.data;
+        closeStatusModal();
+    } catch (err: any) {
+        console.error('Failed to update status:', err);
+        error.value = err.response?.data?.error || 'Не вдалося оновити статус';
+    } finally {
+        updatingStatus.value = false;
+    }
+}
+
+async function issueCertificate() {
+    if (!application.value) return;
+    
+    if (!confirm('Ви впевнені, що хочете видати сертифікат для цієї заявки?')) {
+        return;
+    }
+    
+    issuingCertificate.value = true;
+    error.value = null;
+    try {
+        await api.post(`/applications/${application.value.id}/issue-certificate`);
+        // Reload application to get the updated resultingProfessional
+        await loadApplication();
+    } catch (err: any) {
+        console.error('Failed to issue certificate:', err);
+        error.value = err.response?.data?.error || 'Не вдалося видати сертифікат';
+    } finally {
+        issuingCertificate.value = false;
+    }
+}
+
+const statusOptions = [
+    { value: 'DRAFT', label: 'Чернетка' },
+    { value: 'SUBMITTED', label: 'Подано' },
+    { value: 'UNDER_REVIEW', label: 'На розгляді' },
+    { value: 'SCHEDULED', label: 'Заплановано' },
+    { value: 'TESTED', label: 'Протестовано' },
+    { value: 'APPROVED', label: 'Схвалено' },
+    { value: 'REFUSED', label: 'Відхилено' },
+];
+
 onMounted(loadApplication);
 </script>
 
@@ -176,7 +243,25 @@ onMounted(loadApplication);
         <div v-else-if="application" class="space-y-6">
             <!-- Basic Info -->
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Основна інформація</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">Основна інформація</h2>
+                    <div class="flex gap-2">
+                        <button
+                            v-if="application.status === 'APPROVED' && !application.resultingProfessional"
+                            @click="issueCertificate"
+                            :disabled="issuingCertificate"
+                            class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {{ issuingCertificate ? 'Видача...' : 'Видати сертифікат' }}
+                        </button>
+                        <button
+                            @click="openStatusModal"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                        >
+                            Змінити статус
+                        </button>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Статус</label>
@@ -190,7 +275,11 @@ onMounted(loadApplication);
                         </span>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Заявник</label>
+                        <label class="block text-sm font-medium text-gray-700">ПІБ</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ application.fullName }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email заявника</label>
                         <p class="mt-1 text-sm text-gray-900">{{ application.applicant.email }}</p>
                     </div>
                     <div>
@@ -299,6 +388,46 @@ onMounted(loadApplication);
                             <p class="mt-1 text-sm text-gray-900">{{ application.resultingProfessional.qualificationCenter.name }}</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Change Modal -->
+        <div
+            v-if="showStatusModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            @click.self="closeStatusModal"
+        >
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Змінити статус заявки</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Новий статус</label>
+                    <select
+                        v-model="newStatus"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button
+                        @click="closeStatusModal"
+                        class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                        :disabled="updatingStatus"
+                    >
+                        Скасувати
+                    </button>
+                    <button
+                        @click="updateStatus"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        :disabled="updatingStatus || newStatus === application?.status"
+                    >
+                        {{ updatingStatus ? 'Оновлення...' : 'Зберегти' }}
+                    </button>
                 </div>
             </div>
         </div>

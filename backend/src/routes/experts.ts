@@ -184,9 +184,27 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             },
         });
         res.status(201).json(expert);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create expert', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            res.status(400).json({ error: 'Експерт з такими даними вже існує' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            const field = err.meta?.field_name;
+            if (field?.includes('professionalQualificationId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор професійної кваліфікації' });
+                return;
+            }
+            if (field?.includes('userId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор користувача' });
+                return;
+            }
+            res.status(400).json({ error: 'Невірні дані для створення експерта' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -295,18 +313,38 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
     }
 
     try {
-        // Check if expert exists
-        const existing = await prisma.accreditationExpert.findUnique({ where: { id } });
+        // Check if expert exists and has related records
+        const existing = await prisma.accreditationExpert.findUnique({ 
+            where: { id },
+            include: {
+                qualificationCenterExpertises: { take: 1 },
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Експерта не знайдено' });
+            return;
+        }
+
+        // Check if there are related expertises
+        if (existing.qualificationCenterExpertises.length > 0) {
+            res.status(400).json({ 
+                error: 'Неможливо видалити експерта, оскільки до нього прив\'язані експертизи. Спочатку видаліть всі пов\'язані експертизи.' 
+            });
             return;
         }
 
         await prisma.accreditationExpert.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete expert', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити експерта, оскільки він використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

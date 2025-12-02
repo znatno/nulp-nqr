@@ -112,6 +112,15 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
     }
 
     try {
+        // Verify developer exists
+        const developer = await prisma.qualificationStandardDeveloper.findUnique({
+            where: { id: developerId },
+        });
+        if (!developer) {
+            res.status(404).json({ error: 'Розробника стандартів не знайдено' });
+            return;
+        }
+
         const profession = await prisma.profession.create({
             data: {
                 name: name.trim(),
@@ -121,9 +130,23 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             include: { qualificationStandardDeveloper: true },
         });
         res.status(201).json(profession);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create profession', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            const field = err.meta?.target?.[0];
+            if (field === 'code') {
+                res.status(400).json({ error: 'Професія з таким кодом вже існує' });
+                return;
+            }
+            res.status(400).json({ error: 'Професія з такими даними вже існує' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            res.status(400).json({ error: 'Невірний ідентифікатор розробника стандартів' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -197,17 +220,39 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
 
     try {
         // Check if profession exists
-        const existing = await prisma.profession.findUnique({ where: { id } });
+        const existing = await prisma.profession.findUnique({ 
+            where: { id },
+            include: {
+                professionalQualifications: {
+                    take: 1,
+                },
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Професію не знайдено' });
+            return;
+        }
+
+        // Check if there are related professional qualifications
+        if (existing.professionalQualifications.length > 0) {
+            res.status(400).json({ 
+                error: 'Неможливо видалити професію, оскільки до неї прив\'язані професійні кваліфікації. Спочатку видаліть всі пов\'язані кваліфікації.' 
+            });
             return;
         }
 
         await prisma.profession.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete profession', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити професію, оскільки вона використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

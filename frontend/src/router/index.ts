@@ -345,9 +345,9 @@ router.beforeEach((to, _from, next) => {
 router.afterEach((to) => {
     const title = to.meta.title as string | undefined;
     if (title) {
-        document.title = `${title} — NQF Register`;
+        document.title = `${title} — NQR IS`;
     } else {
-        document.title = 'NQF Register — Національний реєстр кваліфікацій';
+        document.title = 'NQR IS — Національний реєстр кваліфікацій';
     }
 });
 

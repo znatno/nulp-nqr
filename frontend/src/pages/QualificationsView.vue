@@ -93,62 +93,33 @@ onMounted(load);
       Завантаження даних…
     </div>
 
-    <!-- Table with all qualifications -->
+    <!-- Professional Qualifications Table (single unified table) -->
     <div v-else class="overflow-x-auto rounded-lg bg-white shadow-sm border border-slate-100">
       <table class="min-w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 border-b border-slate-100">
             <th class="pb-3 px-4 pt-3">ID</th>
             <th class="pb-3 px-4 pt-3">Назва</th>
-            <th class="pb-3 px-4 pt-3">Рівень</th>
+            <th class="pb-3 px-4 pt-3">Рівень НРК</th>
             <th class="pb-3 px-4 pt-3">Професія</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="qualification in list"
+            v-for="qualification in professionalQualifications"
             :key="qualification.id"
             class="border-t border-slate-100 text-gray-700 hover:bg-slate-50"
           >
             <td class="py-3 px-4">{{ qualification.id }}</td>
-            <td class="py-3 px-4 font-medium">{{ qualification.title }}</td>
-            <td class="py-3 px-4">{{ qualification.level }}</td>
+            <td class="py-3 px-4 font-medium">{{ qualification.name }}</td>
+            <td class="py-3 px-4">{{ qualification.nqrLevel }}</td>
             <td class="py-3 px-4">{{ formatProfession(qualification.profession) }}</td>
           </tr>
-          <tr v-if="list.length === 0">
-            <td colspan="4" class="py-8 text-center text-gray-400">Кваліфікацій не знайдено.</td>
+          <tr v-if="professionalQualifications.length === 0">
+            <td colspan="4" class="py-8 text-center text-gray-400">Професійних кваліфікацій не знайдено.</td>
           </tr>
         </tbody>
       </table>
-    </div>
-
-    <!-- Professional Qualifications Table -->
-    <div v-if="!loading && professionalQualifications.length > 0" class="space-y-4">
-      <h2 class="text-xl font-semibold">Професійні кваліфікації</h2>
-      <div class="overflow-x-auto rounded-lg bg-white shadow-sm border border-slate-100">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="text-left text-gray-500 border-b border-slate-100">
-              <th class="pb-3 px-4 pt-3">ID</th>
-              <th class="pb-3 px-4 pt-3">Назва</th>
-              <th class="pb-3 px-4 pt-3">Рівень НРК</th>
-              <th class="pb-3 px-4 pt-3">Професія</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="qualification in professionalQualifications"
-              :key="qualification.id"
-              class="border-t border-slate-100 text-gray-700 hover:bg-slate-50"
-            >
-              <td class="py-3 px-4">{{ qualification.id }}</td>
-              <td class="py-3 px-4 font-medium">{{ qualification.name }}</td>
-              <td class="py-3 px-4">{{ qualification.nqrLevel }}</td>
-              <td class="py-3 px-4">{{ formatProfession(qualification.profession) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 </template>

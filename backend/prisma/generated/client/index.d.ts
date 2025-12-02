@@ -12718,6 +12718,7 @@ export namespace Prisma {
   export type ApplicationMinAggregateOutputType = {
     id: number | null
     applicantId: number | null
+    fullName: string | null
     professionalQualificationId: number | null
     preferredQualificationCenterId: number | null
     qualificationCenterId: number | null
@@ -12730,6 +12731,7 @@ export namespace Prisma {
   export type ApplicationMaxAggregateOutputType = {
     id: number | null
     applicantId: number | null
+    fullName: string | null
     professionalQualificationId: number | null
     preferredQualificationCenterId: number | null
     qualificationCenterId: number | null
@@ -12742,6 +12744,7 @@ export namespace Prisma {
   export type ApplicationCountAggregateOutputType = {
     id: number
     applicantId: number
+    fullName: number
     professionalQualificationId: number
     preferredQualificationCenterId: number
     qualificationCenterId: number
@@ -12772,6 +12775,7 @@ export namespace Prisma {
   export type ApplicationMinAggregateInputType = {
     id?: true
     applicantId?: true
+    fullName?: true
     professionalQualificationId?: true
     preferredQualificationCenterId?: true
     qualificationCenterId?: true
@@ -12784,6 +12788,7 @@ export namespace Prisma {
   export type ApplicationMaxAggregateInputType = {
     id?: true
     applicantId?: true
+    fullName?: true
     professionalQualificationId?: true
     preferredQualificationCenterId?: true
     qualificationCenterId?: true
@@ -12796,6 +12801,7 @@ export namespace Prisma {
   export type ApplicationCountAggregateInputType = {
     id?: true
     applicantId?: true
+    fullName?: true
     professionalQualificationId?: true
     preferredQualificationCenterId?: true
     qualificationCenterId?: true
@@ -12895,6 +12901,7 @@ export namespace Prisma {
   export type ApplicationGroupByOutputType = {
     id: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId: number | null
     qualificationCenterId: number | null
@@ -12926,6 +12933,7 @@ export namespace Prisma {
   export type ApplicationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     applicantId?: boolean
+    fullName?: boolean
     professionalQualificationId?: boolean
     preferredQualificationCenterId?: boolean
     qualificationCenterId?: boolean
@@ -12944,6 +12952,7 @@ export namespace Prisma {
   export type ApplicationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     applicantId?: boolean
+    fullName?: boolean
     professionalQualificationId?: boolean
     preferredQualificationCenterId?: boolean
     qualificationCenterId?: boolean
@@ -12960,6 +12969,7 @@ export namespace Prisma {
   export type ApplicationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     applicantId?: boolean
+    fullName?: boolean
     professionalQualificationId?: boolean
     preferredQualificationCenterId?: boolean
     qualificationCenterId?: boolean
@@ -12976,6 +12986,7 @@ export namespace Prisma {
   export type ApplicationSelectScalar = {
     id?: boolean
     applicantId?: boolean
+    fullName?: boolean
     professionalQualificationId?: boolean
     preferredQualificationCenterId?: boolean
     qualificationCenterId?: boolean
@@ -12985,7 +12996,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "applicantId" | "professionalQualificationId" | "preferredQualificationCenterId" | "qualificationCenterId" | "status" | "comment" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
+  export type ApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "applicantId" | "fullName" | "professionalQualificationId" | "preferredQualificationCenterId" | "qualificationCenterId" | "status" | "comment" | "createdAt" | "updatedAt", ExtArgs["result"]["application"]>
   export type ApplicationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     applicant?: boolean | UserDefaultArgs<ExtArgs>
     professionalQualification?: boolean | ProfessionalQualificationDefaultArgs<ExtArgs>
@@ -13019,6 +13030,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: number
       applicantId: number
+      fullName: string
       professionalQualificationId: number
       preferredQualificationCenterId: number | null
       qualificationCenterId: number | null
@@ -13456,6 +13468,7 @@ export namespace Prisma {
   interface ApplicationFieldRefs {
     readonly id: FieldRef<"Application", 'Int'>
     readonly applicantId: FieldRef<"Application", 'Int'>
+    readonly fullName: FieldRef<"Application", 'String'>
     readonly professionalQualificationId: FieldRef<"Application", 'Int'>
     readonly preferredQualificationCenterId: FieldRef<"Application", 'Int'>
     readonly qualificationCenterId: FieldRef<"Application", 'Int'>
@@ -15183,6 +15196,7 @@ export namespace Prisma {
   export const ApplicationScalarFieldEnum: {
     id: 'id',
     applicantId: 'applicantId',
+    fullName: 'fullName',
     professionalQualificationId: 'professionalQualificationId',
     preferredQualificationCenterId: 'preferredQualificationCenterId',
     qualificationCenterId: 'qualificationCenterId',
@@ -15979,6 +15993,7 @@ export namespace Prisma {
     NOT?: ApplicationWhereInput | ApplicationWhereInput[]
     id?: IntFilter<"Application"> | number
     applicantId?: IntFilter<"Application"> | number
+    fullName?: StringFilter<"Application"> | string
     professionalQualificationId?: IntFilter<"Application"> | number
     preferredQualificationCenterId?: IntNullableFilter<"Application"> | number | null
     qualificationCenterId?: IntNullableFilter<"Application"> | number | null
@@ -15996,6 +16011,7 @@ export namespace Prisma {
   export type ApplicationOrderByWithRelationInput = {
     id?: SortOrder
     applicantId?: SortOrder
+    fullName?: SortOrder
     professionalQualificationId?: SortOrder
     preferredQualificationCenterId?: SortOrderInput | SortOrder
     qualificationCenterId?: SortOrderInput | SortOrder
@@ -16016,6 +16032,7 @@ export namespace Prisma {
     OR?: ApplicationWhereInput[]
     NOT?: ApplicationWhereInput | ApplicationWhereInput[]
     applicantId?: IntFilter<"Application"> | number
+    fullName?: StringFilter<"Application"> | string
     professionalQualificationId?: IntFilter<"Application"> | number
     preferredQualificationCenterId?: IntNullableFilter<"Application"> | number | null
     qualificationCenterId?: IntNullableFilter<"Application"> | number | null
@@ -16033,6 +16050,7 @@ export namespace Prisma {
   export type ApplicationOrderByWithAggregationInput = {
     id?: SortOrder
     applicantId?: SortOrder
+    fullName?: SortOrder
     professionalQualificationId?: SortOrder
     preferredQualificationCenterId?: SortOrderInput | SortOrder
     qualificationCenterId?: SortOrderInput | SortOrder
@@ -16053,6 +16071,7 @@ export namespace Prisma {
     NOT?: ApplicationScalarWhereWithAggregatesInput | ApplicationScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Application"> | number
     applicantId?: IntWithAggregatesFilter<"Application"> | number
+    fullName?: StringWithAggregatesFilter<"Application"> | string
     professionalQualificationId?: IntWithAggregatesFilter<"Application"> | number
     preferredQualificationCenterId?: IntNullableWithAggregatesFilter<"Application"> | number | null
     qualificationCenterId?: IntNullableWithAggregatesFilter<"Application"> | number | null
@@ -16713,6 +16732,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -16727,6 +16747,7 @@ export namespace Prisma {
   export type ApplicationUncheckedCreateInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
@@ -16738,6 +16759,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16752,6 +16774,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -16765,6 +16788,7 @@ export namespace Prisma {
   export type ApplicationCreateManyInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
@@ -16775,6 +16799,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateManyMutationInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -16784,6 +16809,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -17551,6 +17577,7 @@ export namespace Prisma {
   export type ApplicationCountOrderByAggregateInput = {
     id?: SortOrder
     applicantId?: SortOrder
+    fullName?: SortOrder
     professionalQualificationId?: SortOrder
     preferredQualificationCenterId?: SortOrder
     qualificationCenterId?: SortOrder
@@ -17571,6 +17598,7 @@ export namespace Prisma {
   export type ApplicationMaxOrderByAggregateInput = {
     id?: SortOrder
     applicantId?: SortOrder
+    fullName?: SortOrder
     professionalQualificationId?: SortOrder
     preferredQualificationCenterId?: SortOrder
     qualificationCenterId?: SortOrder
@@ -17583,6 +17611,7 @@ export namespace Prisma {
   export type ApplicationMinOrderByAggregateInput = {
     id?: SortOrder
     applicantId?: SortOrder
+    fullName?: SortOrder
     professionalQualificationId?: SortOrder
     preferredQualificationCenterId?: SortOrder
     qualificationCenterId?: SortOrder
@@ -19057,6 +19086,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateWithoutApplicantInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -19069,6 +19099,7 @@ export namespace Prisma {
 
   export type ApplicationUncheckedCreateWithoutApplicantInput = {
     id?: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
@@ -19179,6 +19210,7 @@ export namespace Prisma {
     NOT?: ApplicationScalarWhereInput | ApplicationScalarWhereInput[]
     id?: IntFilter<"Application"> | number
     applicantId?: IntFilter<"Application"> | number
+    fullName?: StringFilter<"Application"> | string
     professionalQualificationId?: IntFilter<"Application"> | number
     preferredQualificationCenterId?: IntNullableFilter<"Application"> | number | null
     qualificationCenterId?: IntNullableFilter<"Application"> | number | null
@@ -19619,6 +19651,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateWithoutProfessionalQualificationInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -19632,6 +19665,7 @@ export namespace Prisma {
   export type ApplicationUncheckedCreateWithoutProfessionalQualificationInput = {
     id?: number
     applicantId: number
+    fullName: string
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -19868,6 +19902,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateWithoutPreferredQualificationCenterInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -19881,6 +19916,7 @@ export namespace Prisma {
   export type ApplicationUncheckedCreateWithoutPreferredQualificationCenterInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     qualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -19901,6 +19937,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateWithoutAssignedQualificationCenterInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -19914,6 +19951,7 @@ export namespace Prisma {
   export type ApplicationUncheckedCreateWithoutAssignedQualificationCenterInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -21015,6 +21053,7 @@ export namespace Prisma {
   }
 
   export type ApplicationCreateWithoutTestSessionsInput = {
+    fullName: string
     status?: $Enums.ApplicationStatus
     comment?: string | null
     createdAt?: Date | string
@@ -21028,6 +21067,7 @@ export namespace Prisma {
   export type ApplicationUncheckedCreateWithoutTestSessionsInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
@@ -21082,6 +21122,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateWithoutTestSessionsInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21095,6 +21136,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateWithoutTestSessionsInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -21140,6 +21182,7 @@ export namespace Prisma {
 
   export type ApplicationCreateManyApplicantInput = {
     id?: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
@@ -21165,6 +21208,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateWithoutApplicantInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21177,6 +21221,7 @@ export namespace Prisma {
 
   export type ApplicationUncheckedUpdateWithoutApplicantInput = {
     id?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -21189,6 +21234,7 @@ export namespace Prisma {
 
   export type ApplicationUncheckedUpdateManyWithoutApplicantInput = {
     id?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -21342,6 +21388,7 @@ export namespace Prisma {
   export type ApplicationCreateManyProfessionalQualificationInput = {
     id?: number
     applicantId: number
+    fullName: string
     preferredQualificationCenterId?: number | null
     qualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -21451,6 +21498,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateWithoutProfessionalQualificationInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21464,6 +21512,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateWithoutProfessionalQualificationInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
@@ -21476,6 +21525,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateManyWithoutProfessionalQualificationInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
@@ -21515,6 +21565,7 @@ export namespace Prisma {
   export type ApplicationCreateManyPreferredQualificationCenterInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     qualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -21526,6 +21577,7 @@ export namespace Prisma {
   export type ApplicationCreateManyAssignedQualificationCenterInput = {
     id?: number
     applicantId: number
+    fullName: string
     professionalQualificationId: number
     preferredQualificationCenterId?: number | null
     status?: $Enums.ApplicationStatus
@@ -21624,6 +21676,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateWithoutPreferredQualificationCenterInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21637,6 +21690,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateWithoutPreferredQualificationCenterInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
@@ -21649,6 +21703,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateManyWithoutPreferredQualificationCenterInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     qualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
@@ -21658,6 +21713,7 @@ export namespace Prisma {
   }
 
   export type ApplicationUpdateWithoutAssignedQualificationCenterInput = {
+    fullName?: StringFieldUpdateOperationsInput | string
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21671,6 +21727,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateWithoutAssignedQualificationCenterInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
@@ -21683,6 +21740,7 @@ export namespace Prisma {
   export type ApplicationUncheckedUpdateManyWithoutAssignedQualificationCenterInput = {
     id?: IntFieldUpdateOperationsInput | number
     applicantId?: IntFieldUpdateOperationsInput | number
+    fullName?: StringFieldUpdateOperationsInput | string
     professionalQualificationId?: IntFieldUpdateOperationsInput | number
     preferredQualificationCenterId?: NullableIntFieldUpdateOperationsInput | number | null
     status?: EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus

@@ -146,6 +146,26 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
     }
 
     try {
+        // Verify related entities exist
+        const [qualification, center, expert] = await Promise.all([
+            prisma.professionalQualification.findUnique({ where: { id: professionalQualificationId } }),
+            prisma.qualificationCenter.findUnique({ where: { id: qualificationCenterId } }),
+            prisma.accreditationExpert.findUnique({ where: { id: finalAccreditationExpertId } }),
+        ]);
+
+        if (!qualification) {
+            res.status(404).json({ error: 'Професійну кваліфікацію не знайдено' });
+            return;
+        }
+        if (!center) {
+            res.status(404).json({ error: 'Кваліфікаційний центр не знайдено' });
+            return;
+        }
+        if (!expert) {
+            res.status(404).json({ error: 'Експерта не знайдено' });
+            return;
+        }
+
         const examination = await prisma.qualificationCenterExpertise.create({
             data: {
                 professionalQualificationId,
@@ -160,9 +180,31 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             },
         });
         res.status(201).json(transformExamination(examination));
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create examination', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            res.status(400).json({ error: 'Експертиза з такими даними вже існує' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            const field = err.meta?.field_name;
+            if (field?.includes('professionalQualificationId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор професійної кваліфікації' });
+                return;
+            }
+            if (field?.includes('qualificationCenterId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор кваліфікаційного центру' });
+                return;
+            }
+            if (field?.includes('accreditationExpertId')) {
+                res.status(400).json({ error: 'Невірний ідентифікатор експерта' });
+                return;
+            }
+            res.status(400).json({ error: 'Невірні дані для створення експертизи' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -257,15 +299,22 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
         // Check if examination exists
         const existing = await prisma.qualificationCenterExpertise.findUnique({ where: { id } });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Експертизу не знайдено' });
             return;
         }
 
         await prisma.qualificationCenterExpertise.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete examination', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити експертизу, оскільки вона використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

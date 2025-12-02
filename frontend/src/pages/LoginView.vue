@@ -66,7 +66,7 @@ async function handleSubmit() {
     <div class="flex min-h-screen items-center justify-center bg-slate-50 px-4">
         <div class="w-full max-w-md">
             <div class="mb-8 text-center">
-                <h1 class="text-3xl font-bold text-slate-900">NQF Register</h1>
+                <h1 class="text-3xl font-bold text-slate-900">NQR IS</h1>
                 <p class="mt-2 text-slate-600">Увійдіть до системи</p>
             </div>
 

@@ -66,7 +66,7 @@ export const entitiesConfig: Record<string, EntityConfig> = {
             { key: 'id', label: 'ID', sortable: true },
             { key: 'name', label: 'Назва', sortable: true },
             { key: 'code', label: 'Код', sortable: true },
-            { key: 'developer', label: 'Розробник', sortable: false },
+            { key: 'qualificationStandardDeveloper', label: 'Розробник', sortable: false },
         ],
         formFields: [
             { key: 'name', label: 'Назва', type: 'text', required: true },
@@ -103,6 +103,7 @@ export const entitiesConfig: Record<string, EntityConfig> = {
         columns: [
             { key: 'id', label: 'ID', sortable: true },
             { key: 'fullName', label: 'ПІБ', sortable: true },
+            { key: 'certificateNumber', label: 'Номер сертифікату', sortable: true },
             { key: 'qualificationCenter', label: 'Кваліфікаційний центр', sortable: false },
             { key: 'professionalQualification', label: 'Профкваліфікація', sortable: false },
             { key: 'dateReceived', label: 'Дата отримання', sortable: true },
@@ -111,9 +112,10 @@ export const entitiesConfig: Record<string, EntityConfig> = {
             { key: 'fullName', label: 'ПІБ', type: 'text', required: true },
             { key: 'qualificationCenterId', label: 'ID Кваліфікаційного центру', type: 'number', required: true },
             { key: 'professionalQualificationId', label: 'ID Профкваліфікації', type: 'number', required: true },
+            { key: 'certificateNumber', label: 'Номер сертифікату', type: 'text', required: true },
             { key: 'dateReceived', label: 'Дата отримання', type: 'text', required: false },
         ],
-        searchableFields: ['fullName'],
+        searchableFields: ['fullName', 'certificateNumber'],
         defaultSort: {
             field: 'id',
             direction: 'asc',
@@ -167,7 +169,7 @@ export const entitiesConfig: Record<string, EntityConfig> = {
             { key: 'id', label: 'ID', sortable: true },
             { key: 'fullName', label: 'ПІБ', sortable: true },
             { key: 'professionalQualification', label: 'Профкваліфікація', sortable: false },
-            { key: 'user', label: 'Користувач', sortable: false },
+            { key: 'user.id', label: 'ID користувача', sortable: false },
         ],
         formFields: [
             { key: 'fullName', label: 'ПІБ', type: 'text', required: true },

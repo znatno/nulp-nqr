@@ -7,6 +7,7 @@ interface Application {
     id: number;
     status: string;
     comment: string | null;
+    fullName: string;
     createdAt: string;
     preferredQualificationCenter: {
         id: number;
@@ -163,6 +164,10 @@ onMounted(loadApplication);
             <div class="rounded-lg bg-white shadow-sm border border-slate-100 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Основна інформація</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ПІБ</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ application.fullName }}</p>
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Статус</label>
                         <span

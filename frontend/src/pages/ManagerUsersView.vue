@@ -28,6 +28,9 @@ const searchEmail = ref('');
 const filterRole = ref<string>('');
 const editingUser = ref<User | null>(null);
 const showEditModal = ref(false);
+const showGrantManagerModal = ref(false);
+const userToGrantManager = ref<User | null>(null);
+const grantingManager = ref(false);
 
 const router = useRouter();
 
@@ -71,6 +74,35 @@ function getRoleLabel(role: string): string {
 function openEditModal(user: User) {
     editingUser.value = { ...user };
     showEditModal.value = true;
+}
+
+function openGrantManagerModal(user: User) {
+    userToGrantManager.value = user;
+    showGrantManagerModal.value = true;
+}
+
+function closeGrantManagerModal() {
+    showGrantManagerModal.value = false;
+    userToGrantManager.value = null;
+}
+
+async function grantManagerRights() {
+    if (!userToGrantManager.value) return;
+    
+    grantingManager.value = true;
+    error.value = null;
+    try {
+        await api.put(`/users/${userToGrantManager.value.id}`, {
+            role: 'MANAGER',
+        });
+        closeGrantManagerModal();
+        await loadUsers();
+    } catch (err: any) {
+        console.error('Failed to grant manager rights:', err);
+        error.value = err.response?.data?.error || 'Не вдалося надати права менеджера';
+    } finally {
+        grantingManager.value = false;
+    }
 }
 
 async function saveUser() {
@@ -185,12 +217,22 @@ onMounted(() => {
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(user.createdAt) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <button
-                                @click="openEditModal(user)"
-                                class="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                                Редагувати
-                            </button>
+                            <div class="flex items-center gap-3">
+                                <button
+                                    @click="openEditModal(user)"
+                                    class="text-blue-600 hover:text-blue-900 font-medium"
+                                >
+                                    Редагувати
+                                </button>
+                                <button
+                                    v-if="user.role !== 'MANAGER'"
+                                    @click="openGrantManagerModal(user)"
+                                    class="text-purple-600 hover:text-purple-900 font-medium text-xs"
+                                    title="Надати права менеджера"
+                                >
+                                    ⭐ Менеджер
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     <tr v-if="users.length === 0">
@@ -291,6 +333,48 @@ onMounted(() => {
                             class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                         >
                             Зберегти
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grant Manager Rights Confirmation Modal -->
+        <div
+            v-if="showGrantManagerModal && userToGrantManager"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            @click.self="closeGrantManagerModal"
+        >
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4 text-purple-900">Надати права менеджера</h2>
+                    <div class="space-y-4">
+                        <div class="bg-purple-50 border border-purple-200 rounded-md p-4">
+                            <p class="text-sm text-purple-900 mb-2">
+                                Ви впевнені, що хочете надати права <strong>Менеджера системи</strong> користувачу:
+                            </p>
+                            <p class="font-semibold text-purple-900">{{ userToGrantManager.email }}</p>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                            <p class="text-xs text-yellow-800">
+                                ⚠️ <strong>Увага:</strong> Менеджери мають повний доступ до системи, включаючи можливість управління користувачами, заявками та всіма даними.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button
+                            @click="closeGrantManagerModal"
+                            :disabled="grantingManager"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Скасувати
+                        </button>
+                        <button
+                            @click="grantManagerRights"
+                            :disabled="grantingManager"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
+                        >
+                            {{ grantingManager ? 'Надання прав...' : 'Підтвердити' }}
                         </button>
                     </div>
                 </div>

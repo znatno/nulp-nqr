@@ -427,4 +427,266 @@ router.post('/:id/test-sessions', requireManager(), async (req: Request, res: Re
     }
 });
 
+/**
+ * POST /api/applications/:id/issue-certificate
+ * Issue a certificate for an approved application
+ * Requires MANAGER role
+ */
+router.post('/:id/issue-certificate', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            res.status(400).json({ error: 'Invalid ID' });
+            return;
+        }
+
+        // Get application with all necessary data
+        const application = await prisma.application.findUnique({
+            where: { id },
+            include: {
+                applicant: {
+                    select: {
+                        id: true,
+                        email: true,
+                    },
+                },
+                professionalQualification: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                assignedQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                preferredQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        });
+
+        if (!application) {
+            res.status(404).json({ error: 'Заявку не знайдено' });
+            return;
+        }
+
+        // Check if application is approved
+        if (application.status !== 'APPROVED') {
+            res.status(400).json({ error: 'Сертифікат можна видати тільки для схвалених заявок' });
+            return;
+        }
+
+        // Check if certificate already exists
+        const existingProfessional = await prisma.professional.findFirst({
+            where: {
+                userId: application.applicantId,
+                professionalQualificationId: application.professionalQualificationId,
+            },
+        });
+
+        if (existingProfessional) {
+            res.status(400).json({ error: 'Сертифікат для цієї заявки вже видано' });
+            return;
+        }
+
+        // Determine qualification center (assigned or preferred)
+        const qualificationCenterId = application.qualificationCenterId || application.preferredQualificationCenterId;
+        if (!qualificationCenterId) {
+            res.status(400).json({ error: 'Не вказано кваліфікаційний центр. Спочатку призначте центр заявці.' });
+            return;
+        }
+
+        // Verify center exists
+        const center = await prisma.qualificationCenter.findUnique({
+            where: { id: qualificationCenterId },
+        });
+        if (!center) {
+            res.status(404).json({ error: 'Кваліфікаційний центр не знайдено' });
+            return;
+        }
+
+        // Generate unique certificate number (format: NQR-YYYY-XXXXXX)
+        let certificateNumber: string;
+        let attempts = 0;
+        const maxAttempts = 10;
+        do {
+            const year = new Date().getFullYear();
+            const randomSuffix = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            certificateNumber = `NQR-${year}-${randomSuffix}`;
+            
+            const existing = await prisma.professional.findUnique({
+                where: { certificateNumber },
+            });
+            
+            if (!existing) {
+                break;
+            }
+            attempts++;
+        } while (attempts < maxAttempts);
+
+        if (attempts >= maxAttempts) {
+            res.status(500).json({ error: 'Не вдалося згенерувати унікальний номер сертифікату. Спробуйте ще раз.' });
+            return;
+        }
+
+        // Create Professional record (certificate)
+        const professional = await prisma.professional.create({
+            data: {
+                fullName: application.fullName,
+                qualificationCenterId,
+                professionalQualificationId: application.professionalQualificationId,
+                certificateNumber,
+                certificateReceivedAt: new Date(),
+                userId: application.applicantId,
+            },
+            include: {
+                qualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                    },
+                },
+                professionalQualification: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+        });
+
+        res.status(201).json(professional);
+    } catch (err: any) {
+        console.error('Failed to issue certificate', err);
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            res.status(400).json({ error: 'Сертифікат з таким номером вже існує. Спробуйте ще раз.' });
+            return;
+        }
+        if (err.code === 'P2003') {
+            res.status(400).json({ error: 'Невірні дані для створення сертифікату' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
+    }
+});
+
+/**
+ * PUT /api/applications/:id
+ * Update application (status, comment, etc.)
+ * Requires MANAGER role
+ * Note: This route must come after more specific routes like /:id/assign-center
+ */
+router.put('/:id', requireManager(), async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = Number(req.params.id);
+        if (!Number.isInteger(id)) {
+            res.status(400).json({ error: 'Invalid ID' });
+            return;
+        }
+
+        const { status, comment, fullName } = req.body as {
+            status?: unknown;
+            comment?: unknown;
+            fullName?: unknown;
+        };
+
+        // Check if application exists
+        const application = await prisma.application.findUnique({
+            where: { id },
+        });
+
+        if (!application) {
+            res.status(404).json({ error: 'Application not found' });
+            return;
+        }
+
+        // Validate status if provided
+        const validStatuses = ['DRAFT', 'SUBMITTED', 'UNDER_REVIEW', 'SCHEDULED', 'TESTED', 'APPROVED', 'REFUSED'];
+        if (status !== undefined) {
+            if (typeof status !== 'string' || !validStatuses.includes(status)) {
+                res.status(400).json({ error: `status must be one of: ${validStatuses.join(', ')}` });
+                return;
+            }
+        }
+
+        // Validate fullName if provided
+        if (fullName !== undefined && (typeof fullName !== 'string' || !fullName.trim())) {
+            res.status(400).json({ error: 'fullName must be a non-empty string' });
+            return;
+        }
+
+        // Build update data
+        const updateData: any = {};
+        if (status !== undefined) {
+            updateData.status = status;
+        }
+        if (comment !== undefined) {
+            updateData.comment = typeof comment === 'string' ? comment.trim() || null : null;
+        }
+        if (fullName !== undefined) {
+            updateData.fullName = fullName.trim();
+        }
+
+        // Update application
+        const updated = await prisma.application.update({
+            where: { id },
+            data: updateData,
+            include: {
+                applicant: {
+                    select: {
+                        id: true,
+                        email: true,
+                    },
+                },
+                professionalQualification: {
+                    include: {
+                        profession: true,
+                    },
+                },
+                preferredQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                        address: true,
+                    },
+                },
+                assignedQualificationCenter: {
+                    select: {
+                        id: true,
+                        name: true,
+                        edrpou: true,
+                        address: true,
+                    },
+                },
+                testSessions: {
+                    include: {
+                        qualificationCenter: {
+                            select: {
+                                id: true,
+                                name: true,
+                                edrpou: true,
+                            },
+                        },
+                    },
+                    orderBy: { scheduledAt: 'desc' },
+                },
+            },
+        });
+
+        res.json(updated);
+    } catch (err) {
+        console.error('Failed to update application', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 export default router;

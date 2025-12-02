@@ -102,7 +102,11 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
 
     // Validation
     if (typeof name !== 'string' || !name.trim()) {
-        res.status(400).json({ error: 'Name is required' });
+        res.status(400).json({ error: 'Назва обов\'язкова' });
+        return;
+    }
+    if (edrpou !== undefined && (typeof edrpou !== 'string' || !edrpou.trim())) {
+        res.status(400).json({ error: 'ЄДРПОУ має бути непустим рядком' });
         return;
     }
 
@@ -114,9 +118,19 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             },
         });
         res.status(201).json(developer);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create developer', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            const field = err.meta?.target?.[0];
+            if (field === 'edrpou') {
+                res.status(400).json({ error: 'Розробник стандартів з таким ЄДРПОУ вже існує' });
+                return;
+            }
+            res.status(400).json({ error: 'Розробник стандартів з такими даними вже існує' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -182,18 +196,38 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
     }
 
     try {
-        // Check if developer exists
-        const existing = await prisma.qualificationStandardDeveloper.findUnique({ where: { id } });
+        // Check if developer exists and has related records
+        const existing = await prisma.qualificationStandardDeveloper.findUnique({ 
+            where: { id },
+            include: {
+                professions: { take: 1 },
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Розробника стандартів не знайдено' });
+            return;
+        }
+
+        // Check if there are related professions
+        if (existing.professions.length > 0) {
+            res.status(400).json({ 
+                error: 'Неможливо видалити розробника стандартів, оскільки до нього прив\'язані професії. Спочатку видаліть всі пов\'язані професії.' 
+            });
             return;
         }
 
         await prisma.qualificationStandardDeveloper.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete developer', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити розробника стандартів, оскільки він використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

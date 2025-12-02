@@ -115,9 +115,19 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
             data: { name: name.trim(), edrpou: edrpou.trim(), address: address.trim() },
         });
         res.status(201).json(centre);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create qualification centre', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            const field = err.meta?.target?.[0];
+            if (field === 'edrpou') {
+                res.status(400).json({ error: 'Кваліфікаційний центр з таким ЄДРПОУ вже існує' });
+                return;
+            }
+            res.status(400).json({ error: 'Кваліфікаційний центр з такими даними вже існує' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -189,18 +199,60 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
     }
 
     try {
-        // Check if centre exists
-        const existing = await prisma.qualificationCenter.findUnique({ where: { id } });
+        // Check if centre exists and has related records
+        const existing = await prisma.qualificationCenter.findUnique({ 
+            where: { id },
+            include: {
+                qualificationCenterAccreditations: { take: 1 },
+                professionals: { take: 1 },
+                qualificationCenterExpertises: { take: 1 },
+                preferredApplications: { take: 1 },
+                assignedApplications: { take: 1 },
+                testSessions: { take: 1 },
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Кваліфікаційний центр не знайдено' });
+            return;
+        }
+
+        // Check for related records
+        const relatedRecords: string[] = [];
+        if (existing.qualificationCenterAccreditations.length > 0) {
+            relatedRecords.push('акредитації');
+        }
+        if (existing.professionals.length > 0) {
+            relatedRecords.push('професіонали (сертифікати)');
+        }
+        if (existing.qualificationCenterExpertises.length > 0) {
+            relatedRecords.push('експертизи');
+        }
+        if (existing.preferredApplications.length > 0 || existing.assignedApplications.length > 0) {
+            relatedRecords.push('заявки');
+        }
+        if (existing.testSessions.length > 0) {
+            relatedRecords.push('тестові сесії');
+        }
+
+        if (relatedRecords.length > 0) {
+            res.status(400).json({ 
+                error: `Неможливо видалити кваліфікаційний центр, оскільки до нього прив'язані: ${relatedRecords.join(', ')}. Спочатку видаліть всі пов'язані записи.` 
+            });
             return;
         }
 
         await prisma.qualificationCenter.delete({ where: { id } });
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete qualification centre', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити кваліфікаційний центр, оскільки він використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

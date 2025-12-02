@@ -176,6 +176,7 @@ enum ApplicationStatus {
 model Application {
   id                            Int                       @id @default(autoincrement())
   applicantId                   Int                       // FK -> User (applicant)
+  fullName                      String                    // Full name of the applicant
   professionalQualificationId   Int
   preferredQualificationCenterId Int?                     // applicant's preferred center (optional)
   qualificationCenterId         Int?                      // assigned center by manager (required for test)

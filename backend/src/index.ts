@@ -242,7 +242,7 @@ export { app };
 if (process.env.NODE_ENV !== 'test') {
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
-        console.log(`🚀 NQF Register backend listening on http://localhost:${PORT}`);
+        console.log(`🚀 NQR IS backend listening on http://localhost:${PORT}`);
     });
     console.log('DATABASE_URL at runtime:', process.env.DATABASE_URL);
 }

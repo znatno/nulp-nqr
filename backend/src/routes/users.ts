@@ -318,9 +318,19 @@ router.post('/', requireManager(), async (req: Request, res: Response): Promise<
         });
 
         res.status(201).json(user);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to create user', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma errors
+        if (err.code === 'P2002') {
+            const field = err.meta?.target?.[0];
+            if (field === 'email') {
+                res.status(409).json({ error: 'Користувач з таким email вже існує' });
+                return;
+            }
+            res.status(400).json({ error: 'Користувач з такими даними вже існує' });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 
@@ -343,10 +353,18 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
             return;
         }
 
-        // Check if user exists
-        const existing = await prisma.user.findUnique({ where: { id } });
+        // Check if user exists and has related records
+        const existing = await prisma.user.findUnique({ 
+            where: { id },
+            include: {
+                applications: { take: 1 },
+                professionals: { take: 1 },
+                accreditationExperts: { take: 1 },
+                qualificationStandardDeveloper: true,
+            },
+        });
         if (!existing) {
-            res.sendStatus(404);
+            res.status(404).json({ error: 'Користувача не знайдено' });
             return;
         }
 
@@ -356,18 +374,46 @@ router.delete('/:id', requireManager(), async (req: Request, res: Response): Pro
                 where: { role: 'MANAGER' },
             });
             if (managerCount <= 1) {
-                res.status(400).json({ error: 'Cannot delete the last manager' });
+                res.status(400).json({ error: 'Неможливо видалити останнього менеджера системи' });
                 return;
             }
+        }
+
+        // Check for related records that might prevent deletion
+        const relatedRecords: string[] = [];
+        if (existing.applications.length > 0) {
+            relatedRecords.push('заявки');
+        }
+        if (existing.professionals.length > 0) {
+            relatedRecords.push('сертифікати');
+        }
+        if (existing.accreditationExperts.length > 0) {
+            relatedRecords.push('експерти');
+        }
+        if (existing.qualificationStandardDeveloper) {
+            relatedRecords.push('розробник стандартів');
+        }
+
+        // Note: Some relations have cascade delete, but we'll inform the user anyway
+        if (relatedRecords.length > 0) {
+            // Applications and professionals will be cascade deleted, but we inform the user
+            console.log(`Deleting user with related records: ${relatedRecords.join(', ')}`);
         }
 
         // Delete user (cascade will handle related records based on schema)
         await prisma.user.delete({ where: { id } });
 
         res.sendStatus(204);
-    } catch (err) {
+    } catch (err: any) {
         console.error('Failed to delete user', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Handle Prisma foreign key constraint errors
+        if (err.code === 'P2003') {
+            res.status(400).json({ 
+                error: 'Неможливо видалити користувача, оскільки він використовується в інших записах системи.' 
+            });
+            return;
+        }
+        res.status(500).json({ error: err.message || 'Внутрішня помилка сервера' });
     }
 });
 

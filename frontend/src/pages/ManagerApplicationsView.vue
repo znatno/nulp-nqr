@@ -7,6 +7,7 @@ interface Application {
     id: number;
     status: string;
     comment: string | null;
+    fullName: string;
     createdAt: string;
     applicant: {
         id: number;
@@ -52,6 +53,13 @@ const total = ref(0);
 const statusFilter = ref<string>('');
 const qualificationFilter = ref<string>('');
 const centerFilter = ref<string>('');
+const updatingStatus = ref<Record<number, boolean>>({});
+const statusChangeModal = ref<{ show: boolean; appId: number | null; currentStatus: string; newStatus: string }>({
+    show: false,
+    appId: null,
+    currentStatus: '',
+    newStatus: '',
+});
 
 const router = useRouter();
 
@@ -138,6 +146,55 @@ function viewDetails(id: number) {
     router.push(`/manager/applications/${id}`);
 }
 
+function openStatusChangeModal(app: Application) {
+    statusChangeModal.value = {
+        show: true,
+        appId: app.id,
+        currentStatus: app.status,
+        newStatus: app.status,
+    };
+}
+
+function closeStatusChangeModal() {
+    statusChangeModal.value = {
+        show: false,
+        appId: null,
+        currentStatus: '',
+        newStatus: '',
+    };
+}
+
+async function updateApplicationStatus() {
+    if (!statusChangeModal.value.appId) return;
+
+    const appId = statusChangeModal.value.appId;
+    updatingStatus.value[appId] = true;
+    error.value = null;
+
+    try {
+        await api.put(`/applications/${appId}`, {
+            status: statusChangeModal.value.newStatus,
+        });
+        await loadApplications();
+        closeStatusChangeModal();
+    } catch (err: any) {
+        console.error('Failed to update status:', err);
+        error.value = err.response?.data?.error || 'Не вдалося оновити статус';
+    } finally {
+        updatingStatus.value[appId] = false;
+    }
+}
+
+const statusOptions = [
+    { value: 'DRAFT', label: 'Чернетка' },
+    { value: 'SUBMITTED', label: 'Подано' },
+    { value: 'UNDER_REVIEW', label: 'На розгляді' },
+    { value: 'SCHEDULED', label: 'Заплановано' },
+    { value: 'TESTED', label: 'Протестовано' },
+    { value: 'APPROVED', label: 'Схвалено' },
+    { value: 'REFUSED', label: 'Відхилено' },
+];
+
 onMounted(loadApplications);
 </script>
 
@@ -203,7 +260,8 @@ onMounted(loadApplications);
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Заявник</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ПІБ</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Кваліфікація</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Центр</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
@@ -214,6 +272,7 @@ onMounted(loadApplications);
                 <tbody class="bg-white divide-y divide-gray-200">
                     <tr v-for="app in applications" :key="app.id" class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ app.id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ app.fullName }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ app.applicant.email }}</td>
                         <td class="px-6 py-4 text-sm text-gray-900">
                             <div class="font-medium">{{ app.professionalQualification.name }}</div>
@@ -234,14 +293,23 @@ onMounted(loadApplications);
                             <div v-else class="text-gray-400">Не призначено</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                :class="[
-                                    'px-2 py-1 rounded-full text-xs font-medium',
-                                    getStatusClass(app.status)
-                                ]"
-                            >
-                                {{ getStatusLabel(app.status) }}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span
+                                    :class="[
+                                        'px-2 py-1 rounded-full text-xs font-medium',
+                                        getStatusClass(app.status)
+                                    ]"
+                                >
+                                    {{ getStatusLabel(app.status) }}
+                                </span>
+                                <button
+                                    @click="openStatusChangeModal(app)"
+                                    class="text-blue-600 hover:text-blue-900 text-xs"
+                                    title="Змінити статус"
+                                >
+                                    ✏️
+                                </button>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(app.createdAt) }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -254,7 +322,7 @@ onMounted(loadApplications);
                         </td>
                     </tr>
                     <tr v-if="applications.length === 0">
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">Заявок не знайдено</td>
+                        <td colspan="8" class="px-6 py-8 text-center text-gray-500">Заявок не знайдено</td>
                     </tr>
                 </tbody>
             </table>
@@ -278,6 +346,46 @@ onMounted(loadApplications);
                         class="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
                     >
                         Вперед
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Change Modal -->
+        <div
+            v-if="statusChangeModal.show"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            @click.self="closeStatusChangeModal"
+        >
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Змінити статус заявки</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Новий статус</label>
+                    <select
+                        v-model="statusChangeModal.newStatus"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option v-for="option in statusOptions" :key="option.value" :value="option.value">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button
+                        @click="closeStatusChangeModal"
+                        class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                        :disabled="updatingStatus[statusChangeModal.appId || 0]"
+                    >
+                        Скасувати
+                    </button>
+                    <button
+                        @click="updateApplicationStatus"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        :disabled="updatingStatus[statusChangeModal.appId || 0] || statusChangeModal.newStatus === statusChangeModal.currentStatus"
+                    >
+                        {{ updatingStatus[statusChangeModal.appId || 0] ? 'Оновлення...' : 'Зберегти' }}
                     </button>
                 </div>
             </div>
