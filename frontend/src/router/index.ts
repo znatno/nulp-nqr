@@ -15,6 +15,15 @@ import ManagerExaminationsView from '@/pages/ManagerExaminationsView.vue';
 import ManagerDashboardGlobalView from '@/pages/ManagerDashboardGlobalView.vue';
 import ManagerDashboardCentreView from '@/pages/ManagerDashboardCentreView.vue';
 import ManagerReportsView from '@/pages/ManagerReportsView.vue';
+import ManagerApplicationsView from '@/pages/ManagerApplicationsView.vue';
+import ManagerApplicationDetailView from '@/pages/ManagerApplicationDetailView.vue';
+import ManagerTestSessionsView from '@/pages/ManagerTestSessionsView.vue';
+import ApplicantApplicationDetailView from '@/pages/ApplicantApplicationDetailView.vue';
+import DeveloperDashboardView from '@/pages/DeveloperDashboardView.vue';
+import DeveloperProfessionsView from '@/pages/DeveloperProfessionsView.vue';
+import DeveloperQualificationsView from '@/pages/DeveloperQualificationsView.vue';
+import ExpertDashboardView from '@/pages/ExpertDashboardView.vue';
+import ExpertExpertisesView from '@/pages/ExpertExpertisesView.vue';
 import { useAuth } from '@/composables/useAuth';
 import { isManager, isApplicant, isDeveloper, isExpert } from '@/composables/useRole';
 import type { Role } from '@/types/auth';
@@ -111,19 +120,19 @@ const router = createRouter({
                 {
                     path: 'applications',
                     name: 'manager-applications',
-                    component: () => import('@/pages/ManagerApplicationsView.vue'),
+                    component: ManagerApplicationsView,
                     meta: { requiresManager: true, title: 'Заявки' },
                 },
                 {
                     path: 'applications/:id',
                     name: 'manager-application-detail',
-                    component: () => import('@/pages/ManagerApplicationDetailView.vue'),
+                    component: ManagerApplicationDetailView,
                     meta: { requiresManager: true, title: 'Деталі заявки' },
                 },
                 {
                     path: 'test-sessions',
                     name: 'manager-test-sessions',
-                    component: () => import('@/pages/ManagerTestSessionsView.vue'),
+                    component: ManagerTestSessionsView,
                     meta: { requiresManager: true, title: 'Тести / Оцінювання' },
                 },
                 {
@@ -214,7 +223,7 @@ const router = createRouter({
                 {
                     path: 'applications/:id',
                     name: 'applicant-application-detail',
-                    component: () => import('@/pages/ApplicantApplicationDetailView.vue'),
+                    component: ApplicantApplicationDetailView,
                     meta: { requiresApplicant: true, title: 'Деталі заявки' },
                 },
                 {
@@ -233,19 +242,19 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'developer-home',
-                    component: () => import('@/pages/DeveloperDashboardView.vue'),
+                    component: DeveloperDashboardView,
                     meta: { requiresDeveloper: true, title: 'Панель розробника' },
                 },
                 {
                     path: 'professions',
                     name: 'developer-professions',
-                    component: () => import('@/pages/DeveloperProfessionsView.vue'),
+                    component: DeveloperProfessionsView,
                     meta: { requiresDeveloper: true, title: 'Мої професії' },
                 },
                 {
                     path: 'qualifications',
                     name: 'developer-qualifications',
-                    component: () => import('@/pages/DeveloperQualificationsView.vue'),
+                    component: DeveloperQualificationsView,
                     meta: { requiresDeveloper: true, title: 'Мої профкваліфікації' },
                 },
             ],
@@ -258,13 +267,13 @@ const router = createRouter({
                 {
                     path: '',
                     name: 'expert-home',
-                    component: () => import('@/pages/ExpertDashboardView.vue'),
+                    component: ExpertDashboardView,
                     meta: { requiresExpert: true, title: 'Панель експерта' },
                 },
                 {
                     path: 'expertises',
                     name: 'expert-expertises',
-                    component: () => import('@/pages/ExpertExpertisesView.vue'),
+                    component: ExpertExpertisesView,
                     meta: { requiresExpert: true, title: 'Мої експертизи' },
                 },
             ],
