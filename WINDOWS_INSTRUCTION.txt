@@ -1,0 +1,47 @@
+Інструкція із запуску проєкту NULP-NQR на Windows
+
+ЕТАП 1: ВСТАНОВЛЕННЯ ПРОГРАМ
+Перед початком роботи переконайтеся, що у вас встановлені:
+1. Node.js (версія 18+): https://nodejs.org/
+2. PostgreSQL (версія 14+): https://www.postgresql.org/download/windows/
+   ВАЖЛИВО: Під час встановлення запам'ятайте пароль, який ви задали для користувача 'postgres' (наприклад, 'root' або 'admin').
+
+ЕТАП 2: НАЛАШТУВАННЯ БАЗИ ДАНИХ
+1. Відкрийте pgAdmin 4 (встановлюється разом з PostgreSQL).
+2. У лівій панелі перейдіть: Servers -> PostgreSQL.
+3. Натисніть правою кнопкою на "Databases" -> Create -> Database...
+4. Введіть назву: nulp_nqr
+5. Натисніть "Save".
+
+ЕТАП 3: НАЛАШТУВАННЯ БЕКЕНДУ (СЕРВЕРА)
+1. Відкрийте папку "nulp-nqr-main/backend".
+2. Знайдіть файл ".env.example", перейменуйте його на ".env".
+3. Відкрийте файл ".env" у Блокноті.
+4. Знайдіть рядок: DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+5. Замініть його на ваші дані (підставте свій пароль замість 'ваш_пароль'):
+   DATABASE_URL="postgresql://postgres:ваш_пароль@localhost:5432/nulp_nqr"
+6. Збережіть файл.
+7. Відкрийте термінал у папці "backend" і виконайте команди по черзі:
+   npm install
+   npm run migrate
+   npm run prisma:seed
+
+ЕТАП 4: НАЛАШТУВАННЯ ФРОНТЕНДУ (ІНТЕРФЕЙСУ)
+1. Відкрийте новий термінал у папці "nulp-nqr-main/frontend".
+2. Виконайте команду:
+   npm install
+
+ЕТАП 5: ЗАПУСК (ПОТРІБНО 2 ВІКНА ТЕРМІНАЛУ)
+Вікно 1 (Бекенд):
+   У папці "backend" виконайте: npm run dev
+
+Вікно 2 (Фронтенд):
+   У папці "frontend" виконайте: npm run dev
+
+ЕТАП 6: ВХІД У СИСТЕМУ
+Відкрийте браузер за адресою: http://localhost:5173
+
+Тестові акаунти для входу:
+- Менеджер:   manager@nqr.test   / Password123!
+- Заявник:    applicant@nqr.test / Password123!
+- Експерт:    expert@nqr.test    / Password123!
