@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import { PrismaClient } from '../prisma/generated/client/index.js';
 import type {
     Profession,
@@ -52,6 +53,7 @@ const app = express();
 
 // ─────────────────────────────────────────────────────
 // Middleware
+app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
 
