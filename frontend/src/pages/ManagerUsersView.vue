@@ -31,6 +31,9 @@ const showEditModal = ref(false);
 const showGrantManagerModal = ref(false);
 const userToGrantManager = ref<User | null>(null);
 const grantingManager = ref(false);
+const showDeleteModal = ref(false);
+const userToDelete = ref<User | null>(null);
+const deleting = ref(false);
 
 const router = useRouter();
 
@@ -86,6 +89,16 @@ function closeGrantManagerModal() {
     userToGrantManager.value = null;
 }
 
+function openDeleteModal(user: User) {
+    userToDelete.value = user;
+    showDeleteModal.value = true;
+}
+
+function closeDeleteModal() {
+    showDeleteModal.value = false;
+    userToDelete.value = null;
+}
+
 async function grantManagerRights() {
     if (!userToGrantManager.value) return;
     
@@ -102,6 +115,23 @@ async function grantManagerRights() {
         error.value = err.response?.data?.error || 'Не вдалося надати права менеджера';
     } finally {
         grantingManager.value = false;
+    }
+}
+
+async function deleteUser() {
+    if (!userToDelete.value) return;
+    
+    deleting.value = true;
+    error.value = null;
+    try {
+        await api.delete(`/users/${userToDelete.value.id}`);
+        closeDeleteModal();
+        await loadUsers();
+    } catch (err: any) {
+        console.error('Failed to delete user:', err);
+        error.value = err.response?.data?.error || 'Не вдалося видалити користувача';
+    } finally {
+        deleting.value = false;
     }
 }
 
@@ -231,6 +261,13 @@ onMounted(() => {
                                     title="Надати права менеджера"
                                 >
                                     ⭐ Менеджер
+                                </button>
+                                <button
+                                    @click="openDeleteModal(user)"
+                                    class="text-red-600 hover:text-red-900 font-medium"
+                                    title="Видалити користувача"
+                                >
+                                    Видалити
                                 </button>
                             </div>
                         </td>
@@ -375,6 +412,62 @@ onMounted(() => {
                             class="px-4 py-2 bg-purple-600 text-white rounded-md text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                         >
                             {{ grantingManager ? 'Надання прав...' : 'Підтвердити' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete User Confirmation Modal -->
+        <div
+            v-if="showDeleteModal && userToDelete"
+            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            @click.self="closeDeleteModal"
+        >
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-4 text-red-900">Видалити користувача</h2>
+                    <div class="space-y-4">
+                        <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                            <p class="text-sm text-red-900 mb-2">
+                                Ви впевнені, що хочете видалити користувача:
+                            </p>
+                            <p class="font-semibold text-red-900">{{ userToDelete.email }}</p>
+                            <p class="text-xs text-red-700 mt-2">
+                                Роль: {{ getRoleLabel(userToDelete.role) }}
+                            </p>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                            <p class="text-xs text-yellow-800">
+                                ⚠️ <strong>Увага:</strong> Ця дія незворотна. Користувач буде видалений з системи. Пов'язані заявки та інші дані можуть бути також видалені.
+                            </p>
+                        </div>
+                        <div v-if="userToDelete._count" class="bg-gray-50 border border-gray-200 rounded-md p-3">
+                            <p class="text-xs text-gray-700">
+                                <strong>Пов'язані записи:</strong>
+                                <span v-if="userToDelete._count.applications > 0">
+                                    {{ userToDelete._count.applications }} заявок,
+                                </span>
+                                <span v-if="userToDelete._count.professionals > 0">
+                                    {{ userToDelete._count.professionals }} сертифікатів
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button
+                            @click="closeDeleteModal"
+                            :disabled="deleting"
+                            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                            Скасувати
+                        </button>
+                        <button
+                            @click="deleteUser"
+                            :disabled="deleting"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50"
+                        >
+                            {{ deleting ? 'Видалення...' : 'Видалити' }}
                         </button>
                     </div>
                 </div>
